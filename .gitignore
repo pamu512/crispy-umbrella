@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python / PyInstaller
+__pycache__/
+*.py[cod]
+dist/
+build/
+*.spec
