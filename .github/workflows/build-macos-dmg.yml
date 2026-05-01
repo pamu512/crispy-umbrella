@@ -1,0 +1,57 @@
+# Tauri: Next static export + Rust → macOS .dmg (unsigned; suitable for CI artifacts).
+
+name: Build macOS DMG
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dmg:
+    runs-on: macos-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@1.77.2
+        with:
+          components: rustfmt, clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Verify Tauri bundle inputs
+        run: |
+          test -f src-tauri/tauri.conf.json
+          test -f src-tauri/Cargo.toml
+          test -f src-tauri/icons/icon.icns
+
+      - name: Build Tauri (generates .dmg)
+        run: npm run tauri build -- --verbose
+
+      - name: List bundle output
+        if: always()
+        run: find src-tauri/target/release/bundle -type f \( -name '*.dmg' -o -name '*.app' \) 2>/dev/null | head -20 || true
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: src-tauri/target/release/bundle/**/*.dmg
+          if-no-files-found: error
