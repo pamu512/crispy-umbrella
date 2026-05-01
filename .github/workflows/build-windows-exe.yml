@@ -26,8 +26,31 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # PyInstaller on Windows can fail to resolve deep nested paths after checkout.
+      # Stage into a short flat folder, then bundle from there.
+      - name: Stage data for PyInstaller
+        shell: pwsh
+        run: |
+          Set-Location "${{ github.workspace }}"
+          $src = Join-Path "." "src-tauri/resources/scripts/shared_utils"
+          if (-not (Test-Path $src)) {
+            Write-Host "::error::Missing $src — ensure shared_utils is committed on this branch."
+            Get-ChildItem -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object -First 40 FullName
+            exit 1
+          }
+          New-Item -ItemType Directory -Force -Path "pyi_bundle" | Out-Null
+          Copy-Item -Recurse -Force $src "pyi_bundle/shared_utils"
+          if (-not (Test-Path "pyi_bundle/shared_utils/db_manager.py")) { throw "staging failed" }
+          Write-Host "Staged OK:" (Resolve-Path "pyi_bundle/shared_utils")
+
       - name: Build EXE
-        run: pyinstaller --onefile --name CTI_Pipeline_Win --add-data "social_media;social_media" --add-data "src-tauri/resources/scripts/shared_utils;shared_utils" main_pipeline.py
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          pyinstaller --onefile --name CTI_Pipeline_Win `
+            --add-data "social_media;social_media" `
+            --add-data "pyi_bundle/shared_utils;shared_utils" `
+            main_pipeline.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
