@@ -6,7 +6,7 @@ Resolution order for the database file (never uses the repo/dev tree unless you 
 2. ``CTI_WRITABLE_ROOT`` / ``CTI_APP_DATA_ROOT`` — directory containing ``cti_vault.db`` or the ``cti-app`` folder.
 3. Default: ``<Tauri app_data_dir>/<identifier>/cti-app/cti_vault.db`` (same layout as Rust ``writable_cti_root``).
 
-Override the bundle id with ``CTI_APP_IDENTIFIER`` (default ``com.tauri.dev`` to match ``tauri.conf.json``).
+Override the bundle id with ``CTI_APP_IDENTIFIER`` (default matches ``tauri.conf.json`` ``identifier``).
 """
 from __future__ import annotations
 
@@ -79,7 +79,7 @@ def resolve_vault_db_path(explicit: Path | str | None = None) -> Path:
             return (r / "cti_vault.db").resolve()
         return (r / "cti-app" / "cti_vault.db").resolve()
 
-    ident = (os.environ.get("CTI_APP_IDENTIFIER") or "com.tauri.dev").strip()
+    ident = (os.environ.get("CTI_APP_IDENTIFIER") or "com.pamu512.crispyumbrella").strip()
     return (_tauri_app_data_dir(ident) / "cti-app" / "cti_vault.db").resolve()
 
 
