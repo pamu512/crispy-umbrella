@@ -1,0 +1,4 @@
+# Override GitHub Actions / images that ship an old default rustc (e.g. 1.77).
+# `cargo` / `tauri build` pick this up automatically when the working directory is under `src-tauri/`.
+[toolchain]
+channel = "stable"

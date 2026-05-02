@@ -26,11 +26,20 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      # Pinning old toolchains breaks quickly (crates.io MSRV moves). Use stable on CI.
+      # Install a current toolchain (images may still default to an old cargo on PATH).
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+
+      - name: Prefer rustup shims (avoid stale system cargo)
+        shell: bash
+        run: |
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          command -v rustc
+          command -v cargo
+          rustc --version
+          cargo --version
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
@@ -44,7 +53,13 @@ jobs:
           test -f src-tauri/icons/icon.icns
 
       - name: Build Tauri (generates .dmg)
-        run: npm run tauri build -- --verbose
+        shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: stable
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          ( cd src-tauri && rustc --version && cargo --version )
+          npm run tauri build -- --verbose
 
       - name: List bundle output
         if: always()
