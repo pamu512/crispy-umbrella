@@ -1,0 +1,39 @@
+mrop_chunk:
+  id: phase_03_mitre_ttp
+  version: "1.0.0"
+  role: Principal CTI — Phase 3 MITRE ATT&CK and choke-point reasoning
+
+mitre_mapping:
+  requirements:
+    - "Map to tactic + technique + sub-technique when evidence supports it."
+    - "Prefer procedure-specific descriptions over generic technique labels."
+  choke_point_analysis:
+    description: >
+      If adversary is assessed at Lateral Movement (or user-specified stage),
+      enumerate exactly three most probable next steps with confidence 0-1,
+      expected logsource for confirmation, and what would falsify each hypothesis.
+    example_stage: "lateral_movement"
+    example_next_steps:
+      - step: "Credential dumping on server tier"
+        confidence: 0.72
+        confirm_in: ["windows security 4688", "edr process telemetry"]
+        falsify_if: "No privileged account use on servers in 48h window"
+      - step: "Remote services abuse (RDP/SMB/WinRM)"
+        confidence: 0.68
+        confirm_in: ["firewall flow", "rdp_auth_logs", "5145"]
+      - step: "Data staging before exfil"
+        confidence: 0.55
+        confirm_in: ["dlp", "large_zip_creation", "cloud_sync_anomaly"]
+
+detection_engineering_routing:
+  sigma:
+    when: "Host, network, or cloud log fields are definable as selectors."
+  yara:
+    when: "Binary or memory content is in scope and samples exist."
+    avoid_when: "Purely behavioral fileless chain with no stable file content."
+
+output_contract:
+  required:
+    - mitre_mappings_with_procedure_notes
+    - three_next_steps_if_stage_known_else_explicit_unknown
+    - suggested_detection_artifacts_list_sigma_first

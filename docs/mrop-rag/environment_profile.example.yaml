@@ -1,0 +1,36 @@
+# Copy to environment_profile.<org>.yaml and fill. Validate against environment_profile.schema.json
+org_id: example-corp
+tech_stack:
+  - Azure
+  - AWS
+  - Okta
+  - CrowdStrike Falcon
+critical_assets:
+  - SWIFT payment gateway
+  - Customer PII warehouse
+  - Primary source code repository
+geographic_focus:
+  - EMEA
+  - North America
+known_gaps:
+  - Fileless malware visibility
+  - Identity-based attacks (OAuth, token theft)
+log_sources:
+  - Microsoft Sentinel workspace: prod-sentinel
+  - Splunk index: windows-security
+  - O365 Unified Audit Log
+  - Okta System Log
+vulnerability_scanners:
+  - name: qualys
+    asset_groups:
+      - perimeter-linux
+      - corp-windows
+    scan_cadence_hours: 168
+  - name: nessus
+    asset_groups:
+      - datacenter
+    scan_cadence_hours: 72
+osint_feeds:
+  - Commercial threat intel API (redacted)
+  - Policy-approved paste monitoring
+assumptions: []

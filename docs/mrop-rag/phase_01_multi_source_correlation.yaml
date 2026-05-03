@@ -1,0 +1,71 @@
+mrop_chunk:
+  id: phase_01_multi_source_correlation
+  version: "1.0.0"
+  role: Principal CTI — Phase 1 ingestion and correlation
+
+operating_principle: >
+  Be skeptical. Every benign admin tool is a weapon in the wrong hands.
+  Analyze logs like a detective who does not believe in coincidences.
+
+admiralty_weighting:
+  description: >
+    Weight each claim by Reliability (source/trust chain) and Credibility (content plausibility).
+    Use numeric maps internally; expose letter/number to analysts when citing.
+  reliability_scale:
+    A: { weight: 1.0, meaning: "Completely reliable — direct technical verification possible" }
+    B: { weight: 0.85, meaning: "Usually reliable — minor uncertainty" }
+    C: { weight: 0.65, meaning: "Fairly reliable — human chain" }
+    D: { weight: 0.45, meaning: "Not usually reliable — single uncorroborated human" }
+    E: { weight: 0.25, meaning: "Unreliable" }
+    F: { weight: 0.0, meaning: "Cannot judge reliability" }
+  credibility_scale:
+    "1": { weight: 1.0, meaning: "Confirmed by independent internal + external evidence" }
+    "2": { weight: 0.85, meaning: "Probably true — consistent with telemetry" }
+    "3": { weight: 0.65, meaning: "Possibly true" }
+    "4": { weight: 0.45, meaning: "Doubtful" }
+    "5": { weight: 0.25, meaning: "Improbable" }
+    "6": { weight: 0.0, meaning: "Truth cannot be judged" }
+  fusion_formula:
+    expression: "W = 0.5 * reliability_weight + 0.5 * credibility_weight"
+    single_source_penalty: 0.85
+    clamp: [0.0, 1.0]
+
+signal_fusion_cve:
+  inputs:
+    - dark_web_or_osint_mention_of_cve
+    - internal_vuln_scan: qualys_or_nessus_or_equivalent
+    - edr_telemetry: exploitation_primitives
+  decision_tree:
+    - condition: "all_three_true"
+      label: "high_confidence_operational_risk"
+      actions:
+        - normalize_cve_and_map_to_cwe_and_mitre
+        - join_asset_criticality_and_exposure
+        - join_patch_sla
+        - emit_fusion_score_and_failed_legs_transparency
+    - condition: "exactly_two_true"
+      label: "medium_prioritize_validation"
+    - condition: "one_or_zero_true"
+      label: "watchlist_low_fusion_score"
+
+noise_filter_greynoise:
+  discard_when_all:
+    - ip_or_domain_on_known_scanner_or_benign_crawler_lists
+    - no_victim_aligned_session
+    - high_uniform_short_lived_volume
+    - no_follow_on_ttp_chain_within_72h
+    - tls_sni_patterns_match_mass_scanning_without_exploit_correlation
+    - ja3_ja4_asn_geo_match_historical_noise_baseline_for_org_perimeter
+  never_auto_discard_when:
+    - authentication_anomalies
+    - payload_staging_indicators
+    - dns_tunneling_like_entropy
+    - identity_provider_anomalies
+    - critical_asset_touch
+
+output_contract:
+  required_fields:
+    - fusion_score_W
+    - admiralty_reliability_and_credibility_cited
+    - which_fusion_legs_satisfied
+    - noise_filter_decision_with_rationale

@@ -1,0 +1,70 @@
+mrop_chunk:
+  id: master_decision_tree
+  version: "1.0.0"
+  role: Workflow router — end-to-end phase ordering
+
+load_order:
+  - environment_profile
+  - phase_01_multi_source_correlation
+  - phase_02_diamond_model
+  - phase_03_mitre_ttp
+  - phase_04_hidden_risks
+  - phase_05_reporting
+  - phase_06_detection_engineering
+  - global_feedback_loop
+
+decision_tree:
+  description: "Textual graph for agents that cannot render Mermaid."
+  nodes:
+    - id: START
+      on: new_intelligence_item
+      next: ADMIRALTY_FUSION
+    - id: ADMIRALTY_FUSION
+      branches:
+        - if: "W below watchlist threshold AND noise_filter_safe"
+          next: WATCHLIST_OR_DISCARD
+        - if: "otherwise"
+          next: DIAMOND
+    - id: DIAMOND
+      next: MITRE_AND_CHOKE
+    - id: MITRE_AND_CHOKE
+      next: HIDDEN_RISKS
+    - id: HIDDEN_RISKS
+      next: BAYESIAN_FORECAST_IF_APPLICABLE
+    - id: BAYESIAN_FORECAST_IF_APPLICABLE
+      next: THREE_TIER_SIGMA
+    - id: THREE_TIER_SIGMA
+      next: BLUF_AND_JSON_PLAN
+    - id: BLUF_AND_JSON_PLAN
+      next: FP_FEEDBACK_CHECK
+    - id: FP_FEEDBACK_CHECK
+      branches:
+        - if: "fp_reported_on_rule"
+          next: UPDATE_RULE_AND_FP_ANALYSIS
+        - if: "no_fp"
+          next: BASELINE_TUNING_OR_CLOSE
+    - id: WATCHLIST_OR_DISCARD
+      terminal: true
+    - id: UPDATE_RULE_AND_FP_ANALYSIS
+      next: CLOSE
+    - id: BASELINE_TUNING_OR_CLOSE
+      next: CLOSE
+    - id: CLOSE
+      terminal: true
+
+mermaid_optional: |
+  flowchart TD
+    A[New intelligence item] --> B{Admiralty-weighted fusion}
+    B -->|Low W + noise safe| Z[Watchlist / discard]
+    B -->|Med/High W| C[Diamond reconstruction]
+    C --> D[MITRE + choke points]
+    D --> E[Hidden risks]
+    E --> F[Bayesian forecast if applicable]
+    F --> G[3-tier Sigma + YARA if applicable]
+    G --> H[BLUF + JSON action plan]
+    H --> I{FP on rule?}
+    I -->|Yes| J[Update FP analysis + rule]
+    I -->|No| K[Baseline tune / close]
+    J --> L[Close]
+    K --> L[Close]
+    Z --> L[Close]

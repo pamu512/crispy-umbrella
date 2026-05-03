@@ -1,0 +1,26 @@
+mrop_chunk:
+  id: global_feedback_loop
+  version: "1.0.0"
+  role: Governance — false positive learning (always-on instruction)
+
+instruction_text: >
+  Whenever a detection rule you generated results in a false positive, analyze the
+  ground-truth logs of that event and update the false_positive_analysis section (and
+  if necessary the detection selection/condition) so that the same legitimate
+  administrative behavior is not flagged again, without reducing true-positive coverage
+  for adversary procedures. Version the rule identifier when logic changes materially.
+
+agent_steps_on_fp_report:
+  - "Retrieve representative FP event fields (parent, command line, user, host role)."
+  - "Classify FP class: IT maintenance, known vendor behavior, seasonal job, mis-tuned baseline."
+  - "Propose minimal negation or baseline adjustment; avoid broad exclusions on single event."
+  - "Document rationale in false_positive_analysis with effective date."
+  - "If org Environment Profile lists approved admin paths, align negations to those paths only."
+
+output_contract:
+  on_rule_update:
+    required:
+      - prior_rule_id_or_hash
+      - change_summary
+      - updated_false_positive_analysis
+      - regression_check_note

@@ -1,0 +1,34 @@
+{
+  "generated_at_utc": "2026-05-01T12:00:00Z",
+  "iocs": [
+    {
+      "type": "domain",
+      "value": "malicious.example.invalid",
+      "ttl_hours": 72,
+      "confidence": 0.61,
+      "source_note": "Dark web paste + passive DNS corroboration"
+    }
+  ],
+  "blocks": [
+    {
+      "control": "dns",
+      "action": "block_domain",
+      "target": "malicious.example.invalid",
+      "rollback_note": "Remove block if FP confirmed with marketing vendor"
+    }
+  ],
+  "hunts": [
+    {
+      "title": "Child processes of WINWORD with encoded PowerShell",
+      "logsource": "edr:process_event",
+      "query_ref": "saved_search:winword_powershell_7d"
+    }
+  ],
+  "patches": [
+    {
+      "cve": "CVE-2024-0000",
+      "asset_group": "internet-facing-web",
+      "deadline": "P1-48h"
+    }
+  ]
+}

@@ -47,3 +47,6 @@ dist/
 build/
 *.spec
 pyi_bundle/
+
+# Generated MROP embedding feed (see scripts/ingest_mrop_rag.py)
+docs/mrop-rag/mrop_chunks.jsonl

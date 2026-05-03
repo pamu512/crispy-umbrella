@@ -1,0 +1,76 @@
+mrop_chunk:
+  id: phase_06_detection_engineering
+  version: "1.0.0"
+  role: Principal CTI — Phase 6 detection logic engine (Sigma-centric)
+
+three_tier_strategy:
+  tier_1_atomic:
+    logic: "Match hashes, IPs, domains."
+    instruction: "Burn lists and short-TTL blocks only. Do not rely for long-term defense."
+  tier_2_behavioral:
+    logic: "Parent-child process relationships, service anomalies, command-line shapes."
+    instruction: "Primary durable defense. Flag High when office apps spawn shells without documented automation."
+    template_example:
+      selection: "ParentImage contains winword.exe OR excel.exe"
+      action: "Image contains powershell.exe OR cmd.exe OR scrcons.exe"
+      condition: "selection AND action"
+      default_severity: high
+      rationale: "Legitimate office documents rarely spawn interactive shells."
+  tier_3_anomaly_statistical:
+    logic: "Rareness vs rolling baseline (default 30 days unless profile overrides)."
+    instruction: >
+      Compute frequency baselines per user, host, ASN, geo for VPN and interactive logons.
+      Example: alert if user baseline New York suddenly VPN from non-standard ASN AND
+      TTL or session fingerprint variance exceeds 20% vs that user's historical profile.
+
+mandatory_sigma_output_contract:
+  description: "For every detection rule artifact, emit the following structure."
+  fields:
+    title: "string e.g. Suspicious LDAP Query via AdFind"
+    id: "optional stable rule id"
+    status: "experimental|test|stable"
+    description: "one paragraph"
+    logsource:
+      product: "windows|linux|azure|okta|..."
+      category: "process_creation|security|..."
+    detection: "YAML mapping of selection/condition/filters"
+    falsepositives: "list of short strings (Sigma-native)"
+    level: "informational|low|medium|high|critical"
+    metadata:
+      false_positive_analysis:
+        description: "Rich analyst guidance — why this might be legitimate."
+        items_min: 1
+      response_playbook:
+        description: "Exactly three immediate analyst steps."
+        items_count: 3
+        examples:
+          - "Isolate host from network (preserve disk for IR)."
+          - "Reset credentials for affected principals."
+          - "Hunt lateral movement using same TTP family in last 7 days."
+
+extended_risk_monitors:
+  spn_kerberoasting:
+    - "TGS_REQ volume anomalies vs baseline per user and SPN class."
+  golden_certificate_ad_cs:
+    - "Correlate template, enrollment, and CA configuration drift."
+  lotl_binary_renaming:
+    - "Prefer OriginalFileName PE metadata vs Image path and current filename."
+  saas_oauth_abuse:
+    - "New OAuth apps, consent grants, token scopes vs role, SaaS-to-SaaS exfil patterns."
+
+choke_point_philosophy:
+  description: >
+    Prefer monitoring mandatory attacker steps inside the estate over exhaustive edge alerting.
+  example_stages:
+    - credential_access
+    - privilege_escalation
+    - lateral_movement
+    - command_and_control
+    - impact
+
+output_contract:
+  per_threat_deliverables:
+    - tier_1_rules_if_any_with_ttl
+    - tier_2_sigma_minimum_one
+    - tier_3_anomaly_spec_or_explicit_not_applicable_with_reason
+    - mandatory_sigma_metadata_populated

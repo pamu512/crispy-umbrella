@@ -1,0 +1,96 @@
+{
+  "title": "MROP RAG Chunk Manifest",
+  "version": "1.0.0",
+  "description": "Machine-Readable Operational Playbook shards for CTI LLM agent context. Load order: environment_profile → phase_01 … phase_06 → global_feedback_loop.",
+  "chunks": [
+    {
+      "id": "environment_profile",
+      "path": "environment_profile.example.yaml",
+      "schema": "environment_profile.schema.json",
+      "format": "yaml",
+      "summary": "Deployment-specific tech stack, assets, gaps, and log sources. Agent must attach per tenant.",
+      "tags": ["config", "prerequisites"],
+      "load_priority": 0
+    },
+    {
+      "id": "phase_01_multi_source_correlation",
+      "path": "phase_01_multi_source_correlation.yaml",
+      "format": "yaml",
+      "summary": "Admiralty-style weighting, CVE signal fusion, GreyNoise heuristics.",
+      "tags": ["ingestion", "fusion", "noise"],
+      "load_priority": 1
+    },
+    {
+      "id": "phase_02_diamond_model",
+      "path": "phase_02_diamond_model.yaml",
+      "format": "yaml",
+      "summary": "Diamond Model four pillars and fusion contradiction handling.",
+      "tags": ["analysis", "incident"],
+      "load_priority": 2
+    },
+    {
+      "id": "phase_03_mitre_ttp",
+      "path": "phase_03_mitre_ttp.yaml",
+      "format": "yaml",
+      "summary": "MITRE mapping, choke points, lateral-movement prediction, Sigma/YARA routing.",
+      "tags": ["mitre", "ttp", "hunting"],
+      "load_priority": 3
+    },
+    {
+      "id": "phase_04_hidden_risks",
+      "path": "phase_04_hidden_risks.yaml",
+      "format": "yaml",
+      "summary": "Persistence, evasion, identity/PKI, SaaS abuse, Bayesian risk sketch.",
+      "tags": ["blind_spots", "forecasting"],
+      "load_priority": 4
+    },
+    {
+      "id": "phase_05_reporting",
+      "path": "phase_05_reporting.yaml",
+      "format": "yaml",
+      "summary": "BLUF for CISO, technical JSON action plan schema.",
+      "tags": ["reporting", "executive", "soc"],
+      "load_priority": 5
+    },
+    {
+      "id": "phase_06_detection_engineering",
+      "path": "phase_06_detection_engineering.yaml",
+      "format": "yaml",
+      "summary": "Three-tier detection (atomic, behavioral, anomaly), Sigma output contract, extended risks.",
+      "tags": ["sigma", "detection", "edr"],
+      "load_priority": 6
+    },
+    {
+      "id": "global_feedback_loop",
+      "path": "global_feedback_loop.yaml",
+      "format": "yaml",
+      "summary": "Mandatory FP learning loop for rule refinement.",
+      "tags": ["governance", "quality"],
+      "load_priority": 7
+    },
+    {
+      "id": "master_decision_tree",
+      "path": "master_decision_tree.yaml",
+      "format": "yaml",
+      "summary": "End-to-end flowchart nodes for routing analysis phases.",
+      "tags": ["routing", "workflow"],
+      "load_priority": 8
+    },
+    {
+      "id": "technical_action_plan_schema",
+      "path": "technical_action_plan.schema.json",
+      "format": "json",
+      "summary": "JSON Schema for Phase 5 technical_action_plan output.",
+      "tags": ["schema", "reporting"],
+      "load_priority": 5
+    },
+    {
+      "id": "technical_action_plan_example",
+      "path": "technical_action_plan.example.json",
+      "format": "json",
+      "summary": "Example technical_action_plan instance for few-shot grounding.",
+      "tags": ["example", "reporting"],
+      "load_priority": 5
+    }
+  ]
+}

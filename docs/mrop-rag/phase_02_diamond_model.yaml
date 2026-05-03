@@ -1,0 +1,40 @@
+mrop_chunk:
+  id: phase_02_diamond_model
+  version: "1.0.0"
+  role: Principal CTI — Phase 2 tactical reconstruction (Diamond Model)
+
+diamond_model:
+  pillars:
+    adversary:
+      agent_questions:
+        - "Who — APT vs commodity vs insider-aligned?"
+        - "Infrastructure reuse vs one-off throwaway?"
+        - "Intent signals (extortion, espionage, destruction)?"
+    capability:
+      agent_questions:
+        - "How — custom malware vs off-the-shelf?"
+        - "Abuse of signed binaries or stolen certificates?"
+        - "Zero-day vs N-day vs misconfiguration abuse?"
+        - "Ordered TTP stack (procedure chain)?"
+    infrastructure:
+      agent_questions:
+        - "Where — VPS, bulletproof host, fast flux, Tor exits?"
+        - "Compromised legitimate SaaS or CDN abuse?"
+    victim:
+      agent_questions:
+        - "Why this org — sector, M&A timing, geopolitics?"
+        - "Why this asset — e.g. Finance SQL, HR, crown jewels?"
+        - "Persona or department targeting?"
+
+fusion_rules:
+  pillar_contradiction:
+    action: flag_deception_or_incomplete_visibility
+    follow_up: request_missing_telemetry_with_specific_logsource_hints
+
+output_contract:
+  structured_fields_recommended:
+    adversary: { who: "", confidence: 0.0, evidence_refs: [] }
+    capability: { how: "", techniques: [], evidence_refs: [] }
+    infrastructure: { where: [], dns_ssl_notes: "", evidence_refs: [] }
+    victim: { why_org: "", why_asset: "", evidence_refs: [] }
+  narrative: "One paragraph tying pillars; call out contradictions explicitly."

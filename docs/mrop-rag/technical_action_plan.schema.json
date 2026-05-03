@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/mrop-technical-action-plan.json",
+  "title": "MROP Technical Action Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generated_at_utc", "iocs", "blocks", "hunts", "patches"],
+  "properties": {
+    "generated_at_utc": { "type": "string", "format": "date-time" },
+    "iocs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value", "confidence"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["ipv4", "ipv6", "domain", "url", "hash_sha256", "hash_md5", "email", "mutex", "registry_path", "other"]
+          },
+          "value": { "type": "string" },
+          "ttl_hours": { "type": "number", "minimum": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "source_note": { "type": "string" }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["control", "action", "target"],
+        "properties": {
+          "control": { "type": "string", "enum": ["firewall", "proxy", "edr", "idp", "email_gateway", "dns", "other"] },
+          "action": { "type": "string", "enum": ["deny", "isolate_host", "revoke_token", "disable_user", "block_domain", "custom"] },
+          "target": { "type": "string" },
+          "rollback_note": { "type": "string" }
+        }
+      }
+    },
+    "hunts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "logsource"],
+        "properties": {
+          "title": { "type": "string" },
+          "logsource": { "type": "string" },
+          "query_ref": { "type": "string" },
+          "sigma_rule_id": { "type": "string" }
+        }
+      }
+    },
+    "patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cve"],
+        "properties": {
+          "cve": { "type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]+$" },
+          "asset_group": { "type": "string" },
+          "deadline": { "type": "string", "description": "ISO date or SLA label" }
+        }
+      }
+    }
+  }
+}

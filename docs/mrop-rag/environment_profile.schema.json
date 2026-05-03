@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/mrop-environment-profile.json",
+  "title": "MROP Environment Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["org_id", "tech_stack", "critical_assets", "geographic_focus", "known_gaps"],
+  "properties": {
+    "org_id": { "type": "string", "description": "Stable tenant or deployment identifier." },
+    "tech_stack": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "e.g. Azure, AWS, Okta, CrowdStrike"
+    },
+    "critical_assets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Business-critical systems and data classes."
+    },
+    "geographic_focus": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Regions for actor and regulatory prioritization."
+    },
+    "known_gaps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Detection or visibility gaps, e.g. fileless, identity attacks."
+    },
+    "log_sources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "SIEM indices, cloud audit trails, IdP logs."
+    },
+    "vulnerability_scanners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "enum": ["qualys", "nessus", "rapid7", "tenable", "other"] },
+          "asset_groups": { "type": "array", "items": { "type": "string" } },
+          "scan_cadence_hours": { "type": "number", "minimum": 1 }
+        }
+      }
+    },
+    "osint_feeds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Policy-approved OSINT or dark-web monitoring sources."
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit assumptions when any required context is missing."
+    }
+  }
+}

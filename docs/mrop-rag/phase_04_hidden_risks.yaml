@@ -1,0 +1,47 @@
+mrop_chunk:
+  id: phase_04_hidden_risks
+  version: "1.0.0"
+  role: Principal CTI — Phase 4 blind spots, stealth, evasion, forecasting
+
+stealth_persistence_checks:
+  golden_ticket_indicators:
+    - "Anomalous TGT/TGS patterns vs org baseline (not single rule-of-thumb TTL only)."
+  dll_search_order_hijacking:
+    - "Unsigned module loads from user-writable paths ahead of system paths."
+  wmi_event_consumers:
+    - "Permanent and subscription consumers; rare namespaces; new bindings."
+
+evasion_and_lotl:
+  certutil_powershell_abuse:
+    - "Encoded commands, download cradles, unexpected parent chains."
+  originalfilename_vs_image:
+    - "Mismatch between OriginalFileName metadata and Image / on-disk name (renamed LotL)."
+
+identity_and_pki:
+  kerberoasting_spn:
+    - "Unusual volume of TGS requests per user or service vs 30-day baseline."
+  golden_certificate_ad_cs:
+    - "Unauthorized template changes, rogue enrollment patterns, unexpected CA chains."
+    - "Standard EDR gaps — correlate PKI audit, AD CS event logs, certificate transparency where applicable."
+
+saas_abuse:
+  oauth_and_connectors:
+    - "Malicious OAuth app consent, excessive scopes vs job role."
+    - "SaaS-to-SaaS integrations exfiltrating to unknown external tenant."
+
+bayesian_risk_forecasting:
+  description: >
+    Maintain explicit priors and likelihood ratios; never present a number without assumptions.
+  output_fields:
+    - hypothesis: "string e.g. ransomware_deployment"
+    - probability: "float 0-1"
+    - time_window: "string e.g. 48h"
+    - key_assumptions: ["list"]
+    - observables_that_would_raise_or_lower_probability: ["list"]
+  example_prior_language: >
+    Given rise in credential harvesting in sector feed AND exposed RDP,
+    posterior probability of ransomware pivot may increase — state baseline and deltas.
+
+output_contract:
+  checklist_format: true
+  each_item_must_have: [risk_id, what_to_monitor, logsource_hint, baseline_note]

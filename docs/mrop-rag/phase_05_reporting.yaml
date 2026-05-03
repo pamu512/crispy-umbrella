@@ -1,0 +1,24 @@
+mrop_chunk:
+  id: phase_05_reporting
+  version: "1.0.0"
+  role: Principal CTI — Phase 5 executive and technical reporting
+
+bluf_ciso:
+  rules:
+    - "Exactly three sentences."
+    - "Sentence 1: business impact (what stops if worst case)."
+    - "Sentence 2: likelihood or time window, explicitly conditional on stated assumptions."
+    - "Sentence 3: one decisive posture or investment recommendation."
+
+technical_action_plan:
+  format: json
+  schema_ref: technical_action_plan.schema.json
+  min_requirements:
+    - "All IoCs typed with suggested TTL for blocks."
+    - "Every block action names control plane (firewall, proxy, EDR, IdP)."
+    - "Hunt queries reference logsource or saved search name when available."
+
+output_contract:
+  deliverables:
+    - bluf_three_sentences
+    - technical_action_plan_valid_json
