@@ -34,6 +34,38 @@ export function handleSync(req: Extract<IngestionSyncRequest, { kind: "asm" }>):
 export function handleSync(
   req: Extract<IngestionSyncRequest, { kind: "cve" }>
 ): Promise<CveNvdUpdateResult>
+export function handleSync(
+  req: IngestionSyncRequest
+): Promise<string | number | CveNvdUpdateResult> {
+  // Tauri maps each Rust fn parameter (except injected `AppHandle`) to a top-level key — use `payload`.
+  switch (req.kind) {
+    case "mac":
+      return invoke<string>("run_mac_stealer", {
+        payload: {
+          domains: req.payload.domains,
+          ...(req.payload.cookie?.trim() ? { cookie: req.payload.cookie.trim() } : {}),
+        },
+      })
+    case "ransomware": {
+      const apiKey = req.payload.apiKey?.trim()
+      if (apiKey) {
+        return invoke<string>("run_ransomware_sync", {
+          payload: {
+            apiKey,
+            startDate: req.payload.startDate,
+            endDate: req.payload.endDate,
+          },
+        })
+      }
+      return invoke<string>("invoke_ransomware_live_sync", { payload: req.payload })
+    }
+    case "asm":
+      return invoke<number>("invoke_easm_scan", { payload: req.payload })
+    case "cve":
+      return invoke<CveNvdUpdateResult>("invoke_cve_nvd_update", { payload: req.payload })
+  }
+}
+
 /** Bundled `intelx_native_sync.py` via sidecar (`run_intelx`). */
 export async function runIntelxSync(payload: {
   target: string
@@ -83,36 +115,4 @@ export async function runRansomwareNative(payload: {
       ...(apiKey ? { apiKey } : {}),
     },
   })
-}
-
-export async function handleSync(
-  req: IngestionSyncRequest
-): Promise<string | number | CveNvdUpdateResult> {
-  // Tauri maps each Rust fn parameter (except injected `AppHandle`) to a top-level key — use `payload`.
-  switch (req.kind) {
-    case "mac":
-      return invoke<string>("run_mac_stealer", {
-        payload: {
-          domains: req.payload.domains,
-          ...(req.payload.cookie?.trim() ? { cookie: req.payload.cookie.trim() } : {}),
-        },
-      })
-    case "ransomware": {
-      const apiKey = req.payload.apiKey?.trim()
-      if (apiKey) {
-        return invoke<string>("run_ransomware_sync", {
-          payload: {
-            apiKey,
-            startDate: req.payload.startDate,
-            endDate: req.payload.endDate,
-          },
-        })
-      }
-      return invoke<string>("invoke_ransomware_live_sync", { payload: req.payload })
-    }
-    case "asm":
-      return invoke<number>("invoke_easm_scan", { payload: req.payload })
-    case "cve":
-      return invoke<CveNvdUpdateResult>("invoke_cve_nvd_update", { payload: req.payload })
-  }
 }
