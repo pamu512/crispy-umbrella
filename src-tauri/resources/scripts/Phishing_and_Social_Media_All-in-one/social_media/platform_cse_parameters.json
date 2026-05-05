@@ -1,0 +1,80 @@
+{
+  "facebook": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "294a079ba2d4267d5",
+    "safe": "active",
+    "cse_tok": "AEXjvhK6VooxikQmV6BOKeaRMqnA:1759893387560",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/facebookcse.html?q=test"
+  },
+  "twitter": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "a72fbbffee86cd2d2",
+    "safe": "active",
+    "cse_tok": "AEXjvhJUrjba5zqP7RsR5rZhVRxD:1759893391543",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/twittercse.html?q=test"
+  },
+  "instagram": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "c4b97eed1414fcb14",
+    "safe": "active",
+    "cse_tok": "AEXjvhJWt_Ex6QvFUSFRMYJ898vD:1759893395681",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/instagramcse.html?q=test"
+  },
+  "linkedin": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "3fb7efb248d74e652",
+    "safe": "active",
+    "cse_tok": "AEXjvhLFP4UgU1zmN8iMZ6zrjpsM:1759893401389",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/linkedincse.html?q=test"
+  },
+  "tiktok": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "c0311d8946a51b053",
+    "safe": "active",
+    "cse_tok": "AEXjvhK6VooxikQmV6BOKeaRMqnA:1759893387560",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/tiktokcse.html?q=test"
+  },
+  "pinterest": {
+    "rsz": "filtered_cse",
+    "num": "10",
+    "hl": "en",
+    "source": "gcsc",
+    "cselibv": "6467658b9628de43",
+    "cx": "c0311d8946a51b053",
+    "safe": "active",
+    "cse_tok": "AEXjvhLFP4UgU1zmN8iMZ6zrjpsM:1759893401389",
+    "sort": "",
+    "exp": "cc,apo",
+    "rurl": "https://www.social-searcher.com/pinterestcse.html?q=test"
+  }
+}

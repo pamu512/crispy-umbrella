@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { invoke } from "@tauri-apps/api/core"
 import { listen } from "@tauri-apps/api/event"
 import { readTextFile } from "@tauri-apps/plugin-fs"
 import { useWorkspace } from "@/components/WorkspaceProvider"
@@ -20,6 +19,8 @@ import { invokeRunProject } from "@/lib/run-project"
 import { useScriptConsole } from "@/components/workspace/ScriptConsoleProvider"
 import { Paperclip, Send, Square } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { sanitizeBarneyAssistantText } from "@/lib/barney-reply-sanitize"
+import { runSearchVaultFromToolArgs } from "@/lib/vault-search"
 
 type OllamaRole = "user" | "assistant" | "system" | "tool"
 
@@ -98,14 +99,16 @@ export function ChatInterface({
     {
       role: "system",
       content:
-        "You are an elite CTI analyst copilot. Use tools. Always use run_project when execution is needed; the operator must confirm in the UI before it runs. " +
-        "After IntelX / leak-style runs (especially when no credential patterns matched), always end with a short **Recommended follow-ups** section: concrete next checks (PII columns, phones, IPs, alternate queries). Prefer **in-app** actions: call read_workspace_text on paths logged under the workspace (e.g. Intelx_Crawler/final_report/*.csv) to preview headers and rows, read_console_output for more log context, query_db when vault tables apply, and emit one or more run_project tool_calls for follow-up IntelX or other projects so the operator gets confirm cards—do not only paste shell grep/cat unless the file is too large or unreadable. " +
-        "After scripts or Docker jobs finish, use read_console_output to read buffered stdout/stderr from the Console (filter by projectName e.g. Intelx_Crawler). " +
-        "Interpret IntelX lines: search result UUID, record counts, CSV/report paths, exit status. Note: docker compose often prefixes harmless container lifecycle lines with ERROR: even on success. " +
-        "When CVE_Project_NVD finishes successfully, the app upserts into cti_vault.cve_data (cve_id PK, severity_score, published_date, updated_at, metadata JSON). IOC crawler fills ioc_news then ioc_records; ASM fills asm_assets (asset_target PK, asset_type, last_scan_at, status, metadata). query_db is SELECT-only. " +
+        "You are **Barney**, the standalone CTI Command Center's local co-pilot and expert **cyber threat hunter**—not a generic assistant. You are the **central nervous system** of the UI: Ingestion Hub on the left, Live alerts on the right, Host console below—use console errors to suggest fixes (API keys, Docker, Python). Voice: proactive, vigilant, slightly gritty. Hunt for lateral movement, pivot points, blast radius, and exploitation likelihood (CVE → asset → credential → leak). " +
+        "When the host signals Armory ingest or cti_vault telemetry, lead with a hunter briefing: what moved, why it bites, and the next pivot (e.g. IntelX if CVEs spike against your ASM stack). Use tools. Always use run_project when execution is needed; the operator must confirm in the UI before it runs. " +
+        "After IntelX / leak-style runs (especially when no credential patterns matched), always end with a short **Recommended follow-ups** section: concrete next checks (PII columns, phones, IPs, alternate queries). Prefer **in-app** actions: call read_workspace_text on paths logged under the workspace (e.g. Intelx_Crawler/final_report/*.csv) to preview headers and rows, read_console_output for more log context, search_vault (parameterized entity + filters—no SQL) when vault tables apply, and emit one or more run_project tool_calls for follow-up IntelX or other projects so the operator gets confirm cards—do not only paste shell grep/cat unless the file is too large or unreadable. " +
+        "After native Armory scripts finish, use read_console_output to read buffered stdout/stderr from the Console (filter by projectName e.g. Intelx_Crawler). " +
+        "Interpret IntelX lines: search result UUID, record counts, CSV/report paths, exit status. Legacy Docker Compose runs may prefix harmless container lines with ERROR: even on success. " +
+        "When CVE_Project_NVD finishes successfully, the app upserts into cti_vault.cve_data (cve_id PK, severity_score, published_date, updated_at, metadata JSON). IOC crawler fills ioc_news then ioc_records; ASM fills asm_assets (asset_target PK, asset_type, last_scan_at, status, metadata). Vault reads use search_vault only (fixed queries + bound parameters). " +
         "ASM-fetch-main runs export_asm_to_cti_vault.py when present to fill asm_assets from Postgres (see ASM README); CSV fallback if DB is offline. " +
         "Social_MediaV2 requires socialMediaTarget (and optional socialMediaStartDate, socialMediaEndDate, socialMediaNumPerPlatform); after success CSV rows upsert into cti_vault.social_media_results. " +
-        "Phishing_and_Social_Media_All-in-one runs brand_scout.py: pass phishingScanType PS|SMS|ALL, phishingStartDate, phishingEndDate; for PS/ALL pass phishingDomains; for SMS/ALL pass phishingKeywords.",
+        "Phishing_and_Social_Media_All-in-one runs brand_scout.py: pass phishingScanType PS|SMS|ALL, phishingStartDate, phishingEndDate; for PS/ALL pass phishingDomains; for SMS/ALL pass phishingKeywords. " +
+        "Never output meta-rubrics or format constraints to yourself (no `*(…)*` stage directions); speak only to the operator.",
     },
   ])
 
@@ -132,12 +135,38 @@ export function ChatInterface({
             {
               type: "function",
               function: {
-                name: "query_db",
-                description: "Query cti_vault.db (SELECT only).",
+                name: "search_vault",
+                description:
+                  "Search the CTI Command Center vault (canonical SQLite path from the host; parameterized templates only). Required: entity. Optional: textContains, iocType, threatActor (metadata), sourceProject, dateRange {start,end}, cveIdPrefix, minCvss, maxCvss, limit (1–500), order recentFirst|oldestFirst.",
                 parameters: {
                   type: "object",
-                  properties: { query: { type: "string" } },
-                  required: ["query"],
+                  properties: {
+                    entity: {
+                      type: "string",
+                      enum: [
+                        "iocRecords",
+                        "iocNews",
+                        "iocsLegacy",
+                        "cveData",
+                        "asmAssets",
+                        "ransomwareVictims",
+                      ],
+                    },
+                    textContains: { type: "string" },
+                    iocType: { type: "string" },
+                    threatActor: { type: "string" },
+                    sourceProject: { type: "string" },
+                    dateRange: {
+                      type: "object",
+                      properties: { start: { type: "string" }, end: { type: "string" } },
+                    },
+                    cveIdPrefix: { type: "string" },
+                    minCvss: { type: "number" },
+                    maxCvss: { type: "number" },
+                    limit: { type: "integer" },
+                    order: { type: "string", enum: ["recentFirst", "oldestFirst"] },
+                  },
+                  required: ["entity"],
                 },
               },
             },
@@ -158,7 +187,7 @@ export function ChatInterface({
               function: {
                 name: "read_console_output",
                 description:
-                  "Read recent lines from the app Console (script/docker stdout and stderr). Use after tool runs to analyze IntelX results, errors, and exit codes.",
+                  "Read recent lines from the app Console (native script stdout/stderr). Use after tool runs to analyze IntelX results, errors, and exit codes.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -284,12 +313,14 @@ export function ChatInterface({
 
   const continueAfterTools = React.useCallback(
     async (signal: AbortSignal) => {
+      if (!workspacePath) return
+      const wp = workspacePath
       let guard = 0
       while (guard++ < 8 && !signal.aborted) {
         const data = await runOllamaOnce(apiMessagesRef.current, signal)
         const msg = data.message
         if (!msg.tool_calls?.length) {
-          const text = msg.content ?? ""
+          const text = sanitizeBarneyAssistantText(msg.content ?? "")
           apiMessagesRef.current.push({ role: "assistant", content: text })
           const blocks: MessageBlock[] = [{ type: "text", content: text }]
           appendTurn({ id: turnUid("t"), role: "assistant", blocks })
@@ -359,18 +390,15 @@ export function ChatInterface({
             })
             continue
           }
-          if (name === "query_db") {
-            const result = await invoke("query_db", {
-              workspacePath,
-              query: String(args.query ?? ""),
-            }).catch((e) => String(e))
+          if (name === "search_vault") {
+            const content = await runSearchVaultFromToolArgs(wp, args)
             apiMessagesRef.current.push({
               role: "tool",
-              name: "query_db",
-              content: JSON.stringify(result),
+              name: "search_vault",
+              content,
             })
           } else if (name === "read_shared_utils") {
-            const path = `${workspacePath}/shared_utils/${String(args.filename ?? "")}`
+            const path = `${wp}/shared_utils/${String(args.filename ?? "")}`
             const text = await readTextFile(path).catch((e) => String(e))
             apiMessagesRef.current.push({
               role: "tool",
@@ -481,7 +509,7 @@ export function ChatInterface({
             {
               type: "confirm_execution",
               id,
-              summary: "Run Intelx_Crawler (Docker Compose)",
+              summary: "Execute Intelx_Crawler (native)",
               commandPreview: buildIntelxComposePreview(quick),
               payload: {
                 projectName: "Intelx_Crawler",

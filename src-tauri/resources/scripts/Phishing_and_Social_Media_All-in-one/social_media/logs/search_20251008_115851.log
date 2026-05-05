@@ -1,0 +1,21 @@
+2025-10-08 11:58:51,188 - INFO - 🚀 Starting social media search process - Query: 'peter'
+2025-10-08 11:58:51,188 - INFO - 🔄 Starting step: Get all platform CSE parameters
+2025-10-08 11:59:28,862 - INFO - ✅ Step completed: Get all platform CSE parameters
+2025-10-08 11:59:28,862 - INFO - 🔄 Starting step: Save parameters
+2025-10-08 11:59:28,863 - INFO - ✅ Step completed: Save parameters
+2025-10-08 11:59:28,863 - INFO - 🔄 Starting step: Execute social media search
+2025-10-08 11:59:30,636 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhL5mQXiPLzt8VeQ_gwFhyGf%3A1759895935097&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest&q=peter&start=0&callback=google.search.cse.api0
+2025-10-08 11:59:33,596 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIG1_ZKFqtNnTZAOfxRDIKd%3A1759895943717&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest&q=peter&start=0&callback=google.search.cse.api0
+2025-10-08 11:59:34,937 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhJOQy6PYuyGl1WjFerrrA7a%3A1759895965093&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest&q=peter&start=0&callback=google.search.cse.api0
+2025-10-08 11:59:36,269 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhKK79AR6UjVuql6WbQ4uJJe%3A1759895968617&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest&q=peter&start=0&callback=google.search.cse.api0
+2025-10-08 11:59:36,274 - INFO - ✅ Step completed: Execute social media search
+2025-10-08 11:59:36,275 - INFO - 🎉 Search process completed!
+2025-10-08 11:59:36,275 - INFO - 📊 Search Summary:
+2025-10-08 11:59:36,275 - INFO -    Query keyword: peter
+2025-10-08 11:59:36,275 - INFO -    Search platforms: 4 platforms
+2025-10-08 11:59:36,275 - INFO -    Total results: 20
+2025-10-08 11:59:36,275 - INFO -    FACEBOOK: 10 results
+2025-10-08 11:59:36,275 - INFO -    TWITTER: 10 results
+2025-10-08 11:59:36,275 - INFO -    INSTAGRAM: 0 results
+2025-10-08 11:59:36,275 - INFO -    LINKEDIN: 0 results
+2025-10-08 11:59:36,277 - INFO - Log saved to: logs/search_log.json

@@ -1,0 +1,28 @@
+services:
+  main:
+    build: .
+    container_name: phishing_plus
+    environment:
+      - DOMAINS=${DOMAINS:-}
+      - KEYWORDS=${KEYWORDS:-}
+      - SCAN_TYPE=${SCAN_TYPE:-}
+      - START_DATE=${START_DATE:-}
+      - END_DATE=${END_DATE:-}
+      - VAULT_PATH=${VAULT_PATH:-}
+      - CTI_DB_PATH=${CTI_DB_PATH:-}
+    volumes:
+      - .:/workdir
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    command: >
+      sh -c "
+      if [ \"$$SCAN_TYPE\" = 'PS' ]; then
+        /app/entrypoint.sh -ps \"$$DOMAINS\" \"$$START_DATE\" \"$$END_DATE\"
+      elif [ \"$$SCAN_TYPE\" = 'SMS' ]; then
+        /app/entrypoint.sh -sms \"$$KEYWORDS\" \"$$START_DATE\" \"$$END_DATE\"
+      elif [ \"$$SCAN_TYPE\" = 'ALL' ]; then
+        /app/entrypoint.sh -all \"$$DOMAINS\" \"$$KEYWORDS\" \"$$START_DATE\" \"$$END_DATE\"
+      else
+        /app/entrypoint.sh
+      fi
+      "

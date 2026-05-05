@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Optional local Python env for `npm run build:python`
+/.venv/
+
 # dependencies
 /node_modules
 /.pnp
@@ -40,7 +43,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Tauri PyInstaller sidecars (run `npm run build:python`; triple-suffixed names)
+/src-tauri/binaries/*
+!/src-tauri/binaries/.gitkeep
+
 # Python / PyInstaller
+*.egg-info/
 __pycache__/
 *.py[cod]
 dist/
@@ -50,3 +58,9 @@ pyi_bundle/
 
 # Generated MROP embedding feed (see scripts/ingest_mrop_rag.py)
 docs/mrop-rag/mrop_chunks.jsonl
+
+# Local backup copies next to JSON configs
+*.backup.*
+
+# Bundled tools: never commit real API key lists (see *.example.txt in each secrets/)
+src-tauri/resources/scripts/**/secrets/*.txt

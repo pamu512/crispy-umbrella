@@ -1,6 +1,6 @@
 /** Eight CTI projects under All_Scripts workspace (tool belt). */
 export const CTI_TOOL_PROJECTS = [
-  { id: "Intelx_Crawler", scriptType: "sh" as const, label: "IntelX", hint: "Leak search (Compose)" },
+  { id: "Intelx_Crawler", scriptType: "sh" as const, label: "IntelX", hint: "Native vault-linked leak sync" },
   { id: "CVE_Project_NVD", scriptType: "python" as const, label: "CVE / NVD", hint: "NVD ingest" },
   { id: "ASM-fetch-main", scriptType: "python" as const, label: "ASM", hint: "Asset surface" },
   { id: "Ransomware_live_event_victim", scriptType: "python" as const, label: "Ransomware", hint: "Victim telemetry" },
@@ -20,10 +20,10 @@ export function buildIntelxComposePreview(
   const end = opts?.endDate?.trim() || "2099-12-31"
   const lim = opts?.searchLimit?.trim() || "2000"
   return [
-    "docker compose run --rm -i -T intelx-scraper",
-    "  (cwd: Intelx_Crawler/)",
+    "python3 intelx_native_sync.py",
+    "  (cwd: Intelx_Crawler/ under Resource/scripts)",
     "",
-    "stdin (4 lines, same as bacongris workflow_runner):",
+    "stdin (4 lines):",
     `  1) query  → ${query}`,
     `  2) start  → ${start}`,
     `  3) end    → ${end}`,
@@ -59,8 +59,8 @@ export function buildGenericRunPreview(projectName: string, scriptType: string):
   }
   if (projectName === "IOCs-crawler-main") {
     return [
-      `Entry: news_job.py (Celery → Redis; crawlers write RethinkDB BW_crawler.news).`,
-      `After a successful run the app syncs RethinkDB → cti_vault.ioc_news via export_iocs_to_cti_vault.py, then backfills ioc_records; or invoke ingest_iocs_vault when workers have finished.`,
+      `Entry: run_news_crawler.py (bundled as ioc-news-crawler) — writes security news into cti_vault.ioc_news; host backfills ioc_records.`,
+      `Or: news_job.py from the workspace; after a run, the app may call ingest_iocs_vault / run_news_crawler to refresh the vault.`,
     ].join("\n")
   }
   if (projectName === "Compromised_user_Mac") {

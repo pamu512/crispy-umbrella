@@ -2,12 +2,18 @@
 
 import * as React from "react"
 import { motion } from "framer-motion"
-import { invoke } from "@tauri-apps/api/core"
 import { useWorkspace } from "@/components/WorkspaceProvider"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { listen } from "@tauri-apps/api/event"
+import {
+  fetchRecentAsmForFeed,
+  fetchRecentCvesFromPulse,
+  fetchRecentIocsFromPulse,
+  VAULT_UPDATED_EVENT,
+} from "@/lib/vault-search"
 import { cvssNumeric, formatCvssBadge } from "@/lib/cvss-display"
 import { Activity, Radio } from "lucide-react"
 
@@ -35,7 +41,14 @@ function feedFingerprint(cves: CVEDTO[], iocs: IocRecordRow[], asm: AsmRow[]) {
   return `${cves[0]?.cve_id ?? ""}|${iocs[0]?.ioc_value ?? ""}|${asm[0]?.asset_target ?? ""}`
 }
 
-export function LiveContextPanel({ pulseToken }: { pulseToken: number }) {
+export function LiveContextPanel({
+  pulseToken,
+  layout = "sidebar",
+}: {
+  pulseToken: number
+  /** `pillar` = equal-width dashboard column (no fixed 300px width). */
+  layout?: "sidebar" | "pillar"
+}) {
   const { workspacePath } = useWorkspace()
   const [cves, setCves] = React.useState<CVEDTO[]>([])
   const [iocs, setIocs] = React.useState<IocRecordRow[]>([])
@@ -44,30 +57,15 @@ export function LiveContextPanel({ pulseToken }: { pulseToken: number }) {
   const lastFp = React.useRef("")
 
   const load = React.useCallback(async () => {
-    if (!workspacePath) return
-    const nextCves = await invoke<CVEDTO[]>("query_db", {
-      workspacePath,
-      query: `SELECT cve_id, severity_score,
-        COALESCE(json_extract(metadata, '$.description'), '') AS description
-        FROM cve_data
-        ORDER BY datetime(COALESCE(NULLIF(updated_at, ''), published_date)) DESC, cve_id DESC
-        LIMIT 18`,
-    }).catch(() => [])
-    const nextIocs = await invoke<IocRecordRow[]>("query_db", {
-      workspacePath,
-      query: `SELECT ioc_value, ioc_type, last_seen,
-        COALESCE(substr(metadata, 1, 220), '') AS preview
-        FROM ioc_records
-        ORDER BY datetime(COALESCE(NULLIF(last_seen, ''), first_seen)) DESC, ioc_value
-        LIMIT 18`,
-    }).catch(() => [])
-    const nextAsm = await invoke<AsmRow[]>("query_db", {
-      workspacePath,
-      query: `SELECT asset_target, asset_type, last_scan_at, status
-        FROM asm_assets
-        ORDER BY datetime(COALESCE(NULLIF(last_scan_at, ''), '')) DESC, asset_target
-        LIMIT 18`,
-    }).catch(() => [])
+    const nextCves = await fetchRecentCvesFromPulse(18)
+    const rawIocs = await fetchRecentIocsFromPulse(18)
+    const nextIocs: IocRecordRow[] = rawIocs.map((r) => ({
+      ioc_value: r.ioc_value,
+      ioc_type: r.ioc_type,
+      last_seen: r.last_seen,
+      preview: r.source_project ? `Source: ${r.source_project}` : undefined,
+    }))
+    const nextAsm = workspacePath ? await fetchRecentAsmForFeed(workspacePath, 18) : []
 
     const fp = feedFingerprint(nextCves, nextIocs, nextAsm)
     if (fp && fp !== lastFp.current) {
@@ -83,29 +81,41 @@ export function LiveContextPanel({ pulseToken }: { pulseToken: number }) {
   React.useEffect(() => {
     void load()
     const t = window.setInterval(() => void load(), 45_000)
-    return () => window.clearInterval(t)
+    let unlisten: (() => void) | undefined
+    void (async () => {
+      unlisten = await listen(VAULT_UPDATED_EVENT, () => void load())
+    })()
+    return () => {
+      window.clearInterval(t)
+      unlisten?.()
+    }
   }, [load])
 
   React.useEffect(() => {
     if (pulseToken) void load()
   }, [pulseToken, load])
 
+  const pillar = layout === "pillar"
+
   return (
     <motion.aside
       layout
-      className="flex min-h-0 w-[300px] shrink-0 flex-col border-l border-white/10 bg-black/25"
+      className={cn(
+        "flex h-full min-h-0 shrink-0 flex-col bg-black/25",
+        pillar ? "w-full min-w-0 border-0" : "w-[300px] border-l border-white/10"
+      )}
     >
       <div className="flex h-11 items-center gap-2 border-b border-white/10 px-3">
         <Radio className="size-3.5 text-cyan-400" />
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Threat pulse
+          Live alerts · CTI vault
         </span>
         <motion.span
           animate={{ opacity: pulse ? 1 : 0.35 }}
           className="ml-auto flex items-center gap-1 text-[9px] font-mono text-cyan-500/80"
         >
           <Activity className="size-3" />
-          vault
+          Live
         </motion.span>
       </div>
       <div className={cn("min-h-0 flex-1", pulse && "telemetry-pulse")}>
@@ -190,7 +200,7 @@ export function LiveContextPanel({ pulseToken }: { pulseToken: number }) {
                   ))
                 ) : (
                   <p className="px-2 py-6 text-center font-mono text-[10px] text-muted-foreground">
-                    No IOC rows (sync IOCs-crawler → ioc_news, then backfill)
+                    No IOC rows in ioc_records (ingest or run an IOC source, then check again)
                   </p>
                 )}
               </div>

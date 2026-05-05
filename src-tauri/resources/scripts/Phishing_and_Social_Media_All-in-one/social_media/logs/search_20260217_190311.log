@@ -1,0 +1,32 @@
+2026-02-17 19:03:11,201 - INFO - [START] Starting social media search process - Query: 'natixis'
+2026-02-17 19:03:11,201 - INFO - [OUTPUT] Output path: '/app/output'
+2026-02-17 19:03:11,201 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2026-02-17 19:03:40,903 - INFO - Added date sorting for FACEBOOK
+2026-02-17 19:03:40,903 - INFO - Added date sorting for TWITTER
+2026-02-17 19:03:40,903 - INFO - Added date sorting for INSTAGRAM
+2026-02-17 19:03:40,903 - INFO - Added date sorting for LINKEDIN
+2026-02-17 19:03:40,903 - INFO - Added date sorting for TIKTOK
+2026-02-17 19:03:40,903 - INFO - Added date sorting for PINTEREST
+2026-02-17 19:03:40,903 - INFO - [OK] Step completed: Get all platform CSE parameters
+2026-02-17 19:03:40,903 - INFO - [INFO] Starting step: Save parameters
+2026-02-17 19:03:40,912 - INFO - [OK] Step completed: Save parameters
+2026-02-17 19:03:40,912 - INFO - [INFO] Starting step: Execute social media search
+2026-02-17 19:03:40,912 - INFO - [DEBUG] Output path received: /app/output
+2026-02-17 19:03:40,913 - INFO - [DEBUG] Output path type: <class 'str'>
+2026-02-17 19:29:05,255 - INFO - [OK] Step completed: Execute social media search
+2026-02-17 19:29:05,255 - INFO - [SUCCESS] Search process completed!
+2026-02-17 19:29:05,255 - INFO - [SUMMARY] Search Summary:
+2026-02-17 19:29:05,255 - INFO -    Query keyword: natixis
+2026-02-17 19:29:05,255 - INFO -    Search platforms: 6 platforms
+2026-02-17 19:29:05,255 - INFO -    Total results: 538
+2026-02-17 19:29:05,256 - INFO -    FACEBOOK: 100 results
+2026-02-17 19:29:05,256 - INFO -    TWITTER: 100 results
+2026-02-17 19:29:05,256 - INFO -    INSTAGRAM: 100 results
+2026-02-17 19:29:05,256 - INFO -    LINKEDIN: 100 results
+2026-02-17 19:29:05,256 - INFO -    TIKTOK: 100 results
+2026-02-17 19:29:05,256 - INFO -    PINTEREST: 38 results
+2026-02-17 19:29:05,256 - INFO - Log saved to: logs/search_log.json
+2026-02-17 19:29:05,256 - INFO - [SHUTDOWN] Stopping and removing all containers...
+2026-02-17 19:29:05,256 - INFO - [SHUTDOWN] Falling back to individual container stop/remove
+2026-02-17 19:29:05,273 - INFO - [SHUTDOWN] Container docker-tor does not exist
+2026-02-17 19:29:05,273 - INFO - [SHUTDOWN] All containers shutdown and removal process completed

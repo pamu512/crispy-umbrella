@@ -1,0 +1,31 @@
+2025-11-07 23:10:19,178 - INFO - [START] Starting social media search process - Query: 'Onion'
+2025-11-07 23:10:19,178 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-07 23:10:50,942 - INFO - Added date sorting for FACEBOOK
+2025-11-07 23:10:50,943 - INFO - Added date sorting for TWITTER
+2025-11-07 23:10:50,943 - INFO - Added date sorting for INSTAGRAM
+2025-11-07 23:10:50,943 - INFO - Added date sorting for LINKEDIN
+2025-11-07 23:10:50,943 - INFO - Added date sorting for TIKTOK
+2025-11-07 23:10:50,943 - INFO - Added date sorting for PINTEREST
+2025-11-07 23:10:50,943 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-07 23:10:50,943 - INFO - [INFO] Starting step: Save parameters
+2025-11-07 23:10:50,944 - INFO - [OK] Step completed: Save parameters
+2025-11-07 23:10:50,944 - INFO - [INFO] Starting step: Execute social media search
+2025-11-07 23:10:53,840 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhIbZKcm9tuat4lZntBpjsVR%3A1762528223077&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:10:56,355 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIAAbClKj7Yqq8k4qMCowTM%3A1762528228186&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:10:58,889 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhLFwNAGE8gXQdvAJL0ZpOkj%3A1762528233979&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:11:01,828 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=db2c7696979b2a96&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhKpP5u-mzFePldUlPyCY6em%3A1762528238827&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:11:04,984 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c0311d8946a51b053&safe=active&cse_tok=AEXjvhJF7hkwa0VGwC6u3JhlMcrJ%3A1762528243365&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftiktokcse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:11:07,664 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=db2c7696979b2a96&cx=cee97518dc742cf1e&safe=active&cse_tok=AEXjvhKstk1RNO68Y0xYw0gAr9pu%3A1762528248207&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Fpinterestcse.html%3Fq%3Dtest%26sort%3Ddate&q=Onion&start=0&callback=google.search.cse.api0
+2025-11-07 23:11:07,669 - INFO - [OK] Step completed: Execute social media search
+2025-11-07 23:11:07,669 - INFO - [SUCCESS] Search process completed!
+2025-11-07 23:11:07,669 - INFO - [SUMMARY] Search Summary:
+2025-11-07 23:11:07,669 - INFO -    Query keyword: Onion
+2025-11-07 23:11:07,669 - INFO -    Search platforms: 6 platforms
+2025-11-07 23:11:07,669 - INFO -    Total results: 60
+2025-11-07 23:11:07,669 - INFO -    FACEBOOK: 10 results
+2025-11-07 23:11:07,669 - INFO -    TWITTER: 10 results
+2025-11-07 23:11:07,669 - INFO -    INSTAGRAM: 10 results
+2025-11-07 23:11:07,669 - INFO -    LINKEDIN: 10 results
+2025-11-07 23:11:07,669 - INFO -    TIKTOK: 10 results
+2025-11-07 23:11:07,669 - INFO -    PINTEREST: 10 results
+2025-11-07 23:11:07,670 - INFO - Log saved to: logs/search_log.json

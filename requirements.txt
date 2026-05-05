@@ -1,3 +1,4 @@
 # CTI Pipeline EXE (main_pipeline.py + PyInstaller).
 # Matches bundled vault scripts in src-tauri/resources/scripts/shared_utils/
 pandas>=2.0,<3
+pydantic>=2.4,<3

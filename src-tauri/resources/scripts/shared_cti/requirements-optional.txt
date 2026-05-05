@@ -1,0 +1,5 @@
+# Add to a project, or: pip install -r shared_cti/requirements-optional.txt
+requests>=2.28.0
+# For TAXII 2.1 in bridge.taxii_get_objects:
+# taxii2-client>=2.3.0
+# stix2>=3.0.0

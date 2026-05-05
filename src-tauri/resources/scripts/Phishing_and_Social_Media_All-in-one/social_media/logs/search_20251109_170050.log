@@ -1,0 +1,43 @@
+2025-11-09 17:00:50,679 - INFO - [START] Starting social media search process - Query: 'Test'
+2025-11-09 17:00:50,679 - INFO - [OUTPUT] Output path: 'C:\Users\jiwei\Desktop\Test'
+2025-11-09 17:00:50,679 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-09 17:00:50,883 - WARNING - Error occurred while getting CSE parameters (attempt 1): BrowserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2025-11-09 17:00:50,883 - INFO - [RETRY] Retrying parameter retrieval (attempt 2)
+2025-11-09 17:00:53,079 - WARNING - Error occurred while getting CSE parameters (attempt 2): BrowserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2025-11-09 17:00:53,079 - INFO - [RETRY] Retrying parameter retrieval (attempt 3)
+2025-11-09 17:00:57,275 - WARNING - Error occurred while getting CSE parameters (attempt 3): BrowserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2025-11-09 17:00:57,275 - ERROR - [ERROR] Step failed: Get all platform CSE parameters - Error occurred while getting CSE parameters (attempt 3): BrowserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1187/chrome-linux/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2025-11-09 17:00:57,276 - INFO - [INFO] Starting step: Execute social media search
+2025-11-09 17:01:32,665 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhK6VooxikQmV6BOKeaRMqnA%3A1759893387560&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest&q=Test&start=0&callback=google.search.cse.api0

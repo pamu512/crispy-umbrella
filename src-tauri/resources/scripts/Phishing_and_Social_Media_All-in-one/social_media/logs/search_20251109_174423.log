@@ -1,0 +1,26 @@
+2025-11-09 17:44:23,395 - INFO - [START] Starting social media search process - Query: 'Wayne'
+2025-11-09 17:44:23,395 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-09 17:44:23,395 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-09 17:44:46,579 - INFO - Added date sorting for FACEBOOK
+2025-11-09 17:44:46,579 - INFO - Added date sorting for TWITTER
+2025-11-09 17:44:46,579 - INFO - Added date sorting for INSTAGRAM
+2025-11-09 17:44:46,580 - INFO - Added date sorting for LINKEDIN
+2025-11-09 17:44:46,580 - INFO - Added date sorting for TIKTOK
+2025-11-09 17:44:46,580 - INFO - Added date sorting for PINTEREST
+2025-11-09 17:44:46,580 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-09 17:44:46,581 - INFO - [INFO] Starting step: Save parameters
+2025-11-09 17:44:46,581 - INFO - [OK] Step completed: Save parameters
+2025-11-09 17:44:46,581 - INFO - [INFO] Starting step: Execute social media search
+2025-11-09 17:50:29,942 - INFO - [OK] Step completed: Execute social media search
+2025-11-09 17:50:29,942 - INFO - [SUCCESS] Search process completed!
+2025-11-09 17:50:29,942 - INFO - [SUMMARY] Search Summary:
+2025-11-09 17:50:29,943 - INFO -    Query keyword: Wayne
+2025-11-09 17:50:29,943 - INFO -    Search platforms: 6 platforms
+2025-11-09 17:50:29,943 - INFO -    Total results: 600
+2025-11-09 17:50:29,943 - INFO -    FACEBOOK: 100 results
+2025-11-09 17:50:29,943 - INFO -    TWITTER: 100 results
+2025-11-09 17:50:29,944 - INFO -    INSTAGRAM: 100 results
+2025-11-09 17:50:29,944 - INFO -    LINKEDIN: 100 results
+2025-11-09 17:50:29,944 - INFO -    TIKTOK: 100 results
+2025-11-09 17:50:29,944 - INFO -    PINTEREST: 100 results
+2025-11-09 17:50:29,946 - INFO - Log saved to: logs/search_log.json

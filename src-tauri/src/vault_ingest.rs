@@ -6,10 +6,11 @@ use rusqlite::Connection;
 use serde_json::{json, Value};
 
 use crate::vault_db::{self, parse_cvss_base_score, time_now_iso};
+use crate::vector_db::{self as vdb, IOCRecord};
 
 /// Upserts CVE rows from the best available source under `CVE_Project_NVD/`.
 pub fn ingest_cve_from_workspace(workspace_path: &str) -> Result<usize, String> {
-    let db_path = Path::new(workspace_path).join("cti_vault.db");
+    let db_path = vault_db::get_vault_path();
     let conn = vault_db::open_vault(&db_path)?;
 
     let cve_root = Path::new(workspace_path).join("CVE_Project_NVD");
@@ -227,7 +228,7 @@ fn pick_cvss_base_from_metrics(metrics: &Value, key: &str) -> Option<f64> {
 
 /// Fallback when Postgres export is unavailable: newest `*_subdomains.csv` under ASM-fetch-main.
 pub fn ingest_asm_from_workspace(workspace_path: &str) -> Result<usize, String> {
-    let db_path = Path::new(workspace_path).join("cti_vault.db");
+    let db_path = vault_db::get_vault_path();
     let asm_root = Path::new(workspace_path).join("ASM-fetch-main");
     if !asm_root.is_dir() {
         return Err("ASM-fetch-main not found in workspace.".into());
@@ -423,7 +424,7 @@ pub fn ingest_social_media_from_workspace(workspace_path: &str) -> Result<usize,
     use time::format_description::well_known::Rfc3339;
     use time::OffsetDateTime;
 
-    let db_path = Path::new(workspace_path).join("cti_vault.db");
+    let db_path = vault_db::get_vault_path();
     let out_root = Path::new(workspace_path)
         .join("Social_MediaV2")
         .join("output");
@@ -538,4 +539,179 @@ pub fn ingest_social_media_from_workspace(workspace_path: &str) -> Result<usize,
     }
     tx.commit().map_err(|e| e.to_string())?;
     Ok(total)
+}
+
+// ---------------------------------------------------------------------------
+// Headless CLI (Rust-native, no Python)
+// ---------------------------------------------------------------------------
+
+fn norm_csv_header(h: &str) -> String {
+    h.trim_start_matches('\u{feff}')
+        .trim()
+        .to_ascii_lowercase()
+        .replace(' ', "_")
+}
+
+fn find_header_index(headers: &csv::StringRecord, candidates: &[&str]) -> Option<usize> {
+    let mapped: Vec<String> = headers.iter().map(norm_csv_header).collect();
+    for cand in candidates {
+        if let Some(i) = mapped.iter().position(|h| h == cand) {
+            return Some(i);
+        }
+    }
+    None
+}
+
+/// Ingest IOC rows from a generic CSV (same column conventions as Python ``IOC_Generic``).
+///
+/// Required: at least one of ``ioc_value``, ``value``, ``url``, ``email``, ``indicator``.
+/// Optional: ``ioc_type`` / ``type``, ``first_seen`` / ``firstseen``, ``last_seen`` / ``lastseen``,
+/// ``source_project`` / ``project`` / ``source``. Remaining columns are folded into ``metadata`` JSON.
+pub fn ingest_iocs_from_csv(db_path: &Path, csv_path: &Path) -> Result<usize, String> {
+    if !csv_path.is_file() {
+        return Err(format!("IOC CSV path is not a file: {}", csv_path.display()));
+    }
+    let conn = vault_db::open_vault(db_path)?;
+    vault_db::ensure_ioc_records(&conn)?;
+
+    let mut rdr = csv::ReaderBuilder::new()
+        .flexible(true)
+        .from_path(csv_path)
+        .map_err(|e| e.to_string())?;
+    let headers = rdr.headers().map_err(|e| e.to_string())?.clone();
+
+    let i_val = find_header_index(
+        &headers,
+        &["ioc_value", "value", "url", "email", "indicator"],
+    )
+    .ok_or_else(|| {
+        format!(
+            "CSV {} missing an IOC value column (ioc_value, value, url, email, or indicator)",
+            csv_path.display()
+        )
+    })?;
+    let i_type = find_header_index(&headers, &["ioc_type", "type"]);
+    let i_fs = find_header_index(&headers, &["first_seen", "firstseen"]);
+    let i_ls = find_header_index(&headers, &["last_seen", "lastseen"]);
+    let i_src = find_header_index(&headers, &["source_project", "project", "source"]);
+
+    let mut used = vec![i_val];
+    for i in [i_type, i_fs, i_ls, i_src] {
+        if let Some(j) = i {
+            used.push(j);
+        }
+    }
+    used.sort_unstable();
+    used.dedup();
+
+    let now = time_now_iso();
+    let source_name = csv_path
+        .file_name()
+        .and_then(|f| f.to_str())
+        .unwrap_or("");
+
+    let tx = conn
+        .unchecked_transaction()
+        .map_err(|e| e.to_string())?;
+    let mut n = 0usize;
+    {
+        let mut stmt = tx
+            .prepare_cached(
+                "INSERT INTO ioc_records (ioc_value, ioc_type, first_seen, last_seen, source_project, metadata)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                 ON CONFLICT(ioc_value, ioc_type) DO UPDATE SET
+                   last_seen = excluded.last_seen,
+                   metadata = COALESCE(excluded.metadata, ioc_records.metadata),
+                   source_project = CASE
+                     WHEN excluded.source_project IS NOT NULL AND TRIM(COALESCE(excluded.source_project, '')) != ''
+                     THEN excluded.source_project
+                     ELSE ioc_records.source_project
+                   END",
+            )
+            .map_err(|e| e.to_string())?;
+
+        for rec in rdr.records() {
+            let rec = rec.map_err(|e| e.to_string())?;
+            let raw_val = rec.get(i_val).unwrap_or("").trim();
+            if raw_val.is_empty() {
+                continue;
+            }
+            let mut ioc_type = i_type
+                .and_then(|i| rec.get(i))
+                .unwrap_or("")
+                .trim()
+                .to_ascii_lowercase();
+            if ioc_type.is_empty() {
+                ioc_type = "unknown".into();
+            }
+            let fs = i_fs
+                .and_then(|i| rec.get(i))
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| now.clone());
+            let ls = i_ls
+                .and_then(|i| rec.get(i))
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| now.clone());
+            let proj = i_src
+                .and_then(|i| rec.get(i))
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "csv_ingest".into());
+
+            let mut meta = serde_json::Map::new();
+            meta.insert("source_csv".into(), json!(source_name));
+            meta.insert("ingestor".into(), json!("rust_headless"));
+            for (idx, h) in headers.iter().enumerate() {
+                if used.contains(&idx) {
+                    continue;
+                }
+                let key = norm_csv_header(h);
+                if key.is_empty() {
+                    continue;
+                }
+                let cell = rec.get(idx).unwrap_or("").trim();
+                if !cell.is_empty() {
+                    meta.insert(key, json!(cell));
+                }
+            }
+            let metadata = Value::Object(meta).to_string();
+
+            stmt.execute(rusqlite::params![
+                raw_val,
+                ioc_type,
+                fs,
+                ls,
+                proj,
+                metadata
+            ])
+            .map_err(|e| e.to_string())?;
+            let rowid = tx.last_insert_rowid();
+            vdb::queue_embed_and_store(IOCRecord {
+                ioc_value: raw_val.to_string(),
+                ioc_type: ioc_type.clone(),
+                first_seen: Some(fs.clone()),
+                last_seen: Some(ls.clone()),
+                source_project: Some(proj.clone()),
+                metadata: Some(metadata.clone()),
+                sqlite_rowid: Some(rowid),
+            });
+            n += 1;
+        }
+    }
+    tx.commit().map_err(|e| e.to_string())?;
+    Ok(n)
+}
+
+/// Ingest ASM-style asset rows from one CSV (same columns as ``ingest_asm_subdomain_csv``).
+pub fn ingest_asm_assets_from_csv(db_path: &Path, csv_path: &Path) -> Result<usize, String> {
+    if !csv_path.is_file() {
+        return Err(format!("Asset CSV path is not a file: {}", csv_path.display()));
+    }
+    let conn = vault_db::open_vault(db_path)?;
+    ingest_asm_subdomain_csv(&conn, csv_path)
 }

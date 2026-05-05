@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { invoke } from "@tauri-apps/api/core"
+import { invokeSearchVault } from "@/lib/vault-search"
 import { useWorkspace } from "./WorkspaceProvider"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
@@ -27,75 +27,67 @@ export function InvestigationCanvas() {
     setSearching(true)
     setResults([])
 
-    const searchTerm = `%${query}%`
+    const q = query.trim()
 
     try {
       const allResults: SearchResult[] = []
 
-      // Search CVEs
-      const cves = await invoke<any[]>("query_db", {
-        workspacePath,
-        query: `SELECT cve_id, metadata FROM cve_data WHERE cve_id LIKE '${searchTerm}' OR metadata LIKE '${searchTerm}' LIMIT 5`,
-      }).catch(() => [])
-
+      const cves = await invokeSearchVault({ workspacePath, entity: "cveData", textContains: q, limit: 5 }).catch(
+        () => [] as Record<string, unknown>[]
+      )
       cves.forEach((r) =>
         allResults.push({
           source: "CVE",
-          title: r.cve_id,
-          details: r.metadata || "No metadata",
+          title: String(r.cve_id ?? ""),
+          details: String(r.metadata ?? "No metadata"),
         })
       )
 
-      // Search Ransomware Leaks
-      const leaks = await invoke<any[]>("query_db", {
+      const leaks = await invokeSearchVault({
         workspacePath,
-        query: `SELECT company, group_name FROM Ransomware_live_event_victim WHERE company LIKE '${searchTerm}' OR group_name LIKE '${searchTerm}' LIMIT 5`
-      }).catch(() => [])
+        entity: "ransomwareVictims",
+        textContains: q,
+        limit: 5,
+      }).catch(() => [] as Record<string, unknown>[])
 
-      leaks.forEach(r => allResults.push({
-        source: "Ransomware",
-        title: r.company,
-        details: `Group: ${r.group_name}`
-      }))
+      leaks.forEach((r) =>
+        allResults.push({
+          source: "Ransomware",
+          title: String(r.company ?? ""),
+          details: `Group: ${String(r.group_name ?? "")}`,
+        })
+      )
 
-      // Search Assets
-      const assets = await invoke<any[]>("query_db", {
-        workspacePath,
-        query: `SELECT asset_target, metadata FROM asm_assets WHERE asset_target LIKE '${searchTerm}' OR metadata LIKE '${searchTerm}' LIMIT 5`,
-      }).catch(() => [])
-
+      const assets = await invokeSearchVault({ workspacePath, entity: "asmAssets", textContains: q, limit: 5 }).catch(
+        () => [] as Record<string, unknown>[]
+      )
       assets.forEach((r) =>
         allResults.push({
           source: "Asset",
-          title: r.asset_target,
-          details: r.metadata || "",
+          title: String(r.asset_target ?? ""),
+          details: String(r.metadata ?? ""),
         })
       )
 
-      // Search IOCs
-      const iocs = await invoke<any[]>("query_db", {
-        workspacePath,
-        query: `SELECT ioc_value, type FROM iocs WHERE ioc_value LIKE '${searchTerm}' LIMIT 5`
-      }).catch(() => [])
-
+      const iocs = await invokeSearchVault({ workspacePath, entity: "iocsLegacy", textContains: q, limit: 5 }).catch(
+        () => [] as Record<string, unknown>[]
+      )
       iocs.forEach((r) =>
         allResults.push({
           source: "IOC",
-          title: r.ioc_value,
-          details: `Type: ${r.type}`,
+          title: String(r.ioc_value ?? ""),
+          details: `Type: ${String(r.type ?? "")}`,
         })
       )
 
-      const iocRec = await invoke<any[]>("query_db", {
-        workspacePath,
-        query: `SELECT ioc_value, ioc_type, metadata FROM ioc_records WHERE ioc_value LIKE '${searchTerm}' OR metadata LIKE '${searchTerm}' LIMIT 5`,
-      }).catch(() => [])
-
+      const iocRec = await invokeSearchVault({ workspacePath, entity: "iocRecords", textContains: q, limit: 5 }).catch(
+        () => [] as Record<string, unknown>[]
+      )
       iocRec.forEach((r) =>
         allResults.push({
           source: "IOC record",
-          title: r.ioc_value,
-          details: `${r.ioc_type} — ${r.metadata || ""}`,
+          title: String(r.ioc_value ?? ""),
+          details: `${String(r.ioc_type ?? "")} — ${String(r.metadata ?? "")}`,
         })
       )
 

@@ -1,0 +1,23 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
+celery
+redis
+pandas
+openpyxl
+python-dotenv
+shodan
+requests
+ipwhois
+validators
+bs4
+certifi
+charset-normalizer
+idna
+ssllabsscan @ git+https://github.com/kyhau/ssllabs-scan.git@fc3bdf3a0a1e1d19550f324d7b0b62cf66e7621c
+urllib3
+alembic
+tldextract
+python-whois

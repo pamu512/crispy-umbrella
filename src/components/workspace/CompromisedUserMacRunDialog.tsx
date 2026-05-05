@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useWorkspace } from "@/components/WorkspaceProvider"
 import { invokeRunProject, type CompromisedUserMacRunParams } from "@/lib/run-project"
+import { useBundledScriptsRoot } from "@/lib/use-bundled-scripts-root"
 
 export function CompromisedUserMacRunDialog({
   open,
@@ -28,6 +29,7 @@ export function CompromisedUserMacRunDialog({
   onStarted: () => void
 }) {
   const { scriptsRoot } = useWorkspace()
+  const effectiveScriptsRoot = useBundledScriptsRoot(scriptsRoot)
   const [domains, setDomains] = React.useState("")
   const [cookie, setCookie] = React.useState("")
   const [busy, setBusy] = React.useState(false)
@@ -62,7 +64,7 @@ export function CompromisedUserMacRunDialog({
         null,
         null,
         params,
-        { scriptsRoot: scriptsRoot ?? undefined }
+        { scriptsRoot: effectiveScriptsRoot }
       )
       onStarted()
       onOpenChange(false)
@@ -79,7 +81,7 @@ export function CompromisedUserMacRunDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-panel max-w-md border-white/15 sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Run Mac Compromise (Rumark)</DialogTitle>
+          <DialogTitle>Native Mac Compromise (Rumark)</DialogTitle>
           <DialogDescription>
             Domains are sent to <code className="font-mono text-xs">main.py</code> as{" "}
             <code className="font-mono text-xs">RUMARK_DOMAINS</code>. Optional session cookie as{" "}
@@ -116,7 +118,7 @@ export function CompromisedUserMacRunDialog({
             Cancel
           </Button>
           <Button type="button" onClick={() => void submit()} disabled={busy}>
-            {busy ? "Starting…" : "Run"}
+            {busy ? "Starting…" : "Initialize Hunter Sync."}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,0 +1,12 @@
+services:
+  intelx-scraper:
+    build: .
+    container_name: intelx-scraper
+    volumes:
+      - ./csv_output:/app/csv_output
+      - ./original_raw_data:/app/original_raw_data
+      - ./final_report:/app/final_report
+      - ./filtered:/app/filtered
+      - ./Credential:/app/Credential
+    stdin_open: true
+    tty: true

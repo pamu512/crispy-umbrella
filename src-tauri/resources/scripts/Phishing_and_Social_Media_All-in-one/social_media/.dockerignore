@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+*.log
+logs/
+output/
+.git
+.gitignore
+*.md
+DOCKER_TOR_SETUP.md
+docker-compose.override.yml.example
+

@@ -1,0 +1,32 @@
+2025-10-20 21:28:32,377 - INFO - [START] Starting social media search process - Query: 'Tam'
+2025-10-20 21:28:32,377 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-10-20 21:28:48,119 - INFO - Added date sorting for FACEBOOK
+2025-10-20 21:28:48,119 - INFO - Added date sorting for TWITTER
+2025-10-20 21:28:48,119 - INFO - Added date sorting for INSTAGRAM
+2025-10-20 21:28:48,120 - INFO - Added date sorting for LINKEDIN
+2025-10-20 21:28:48,120 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-10-20 21:28:48,120 - INFO - [INFO] Starting step: Save parameters
+2025-10-20 21:28:48,121 - INFO - [OK] Step completed: Save parameters
+2025-10-20 21:28:48,121 - INFO - [INFO] Starting step: Execute social media search
+2025-10-20 21:28:49,951 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLmpdADPTdu1RxaZrmkD12V%3A1760966914157&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=Tam&start=0&callback=google.search.cse.api0
+2025-10-20 21:28:52,316 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhLh3UjFcBc6T0RWIZ4JoVmo%3A1760966918112&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=Tam&start=0&callback=google.search.cse.api0
+2025-10-20 21:28:52,334 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-20 21:28:52,351 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-20 21:28:55,357 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-20 21:29:20,765 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhLiu5HxI0fwMPUSZ2BeKDa9%3A1760966945607&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=Tam&start=0&callback=google.search.cse.api0
+2025-10-20 21:29:23,597 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhJnx4r4g5RQbEAitG8psekt%3A1760966921755&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=Tam&start=0&callback=google.search.cse.api0
+2025-10-20 21:29:29,227 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhL99OqMQiYyxyYYTBzstmJq%3A1760966925310&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=Tam&start=0&callback=google.search.cse.api0
+2025-10-20 21:29:29,235 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0005)
+2025-10-20 21:29:29,252 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-20 21:29:32,257 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-20 21:29:32,267 - INFO - [OK] Step completed: Execute social media search
+2025-10-20 21:29:32,268 - INFO - [SUCCESS] Search process completed!
+2025-10-20 21:29:32,268 - INFO - [SUMMARY] Search Summary:
+2025-10-20 21:29:32,268 - INFO -    Query keyword: Tam
+2025-10-20 21:29:32,268 - INFO -    Search platforms: 4 platforms
+2025-10-20 21:29:32,268 - INFO -    Total results: 40
+2025-10-20 21:29:32,268 - INFO -    FACEBOOK: 10 results
+2025-10-20 21:29:32,268 - INFO -    TWITTER: 10 results
+2025-10-20 21:29:32,268 - INFO -    INSTAGRAM: 10 results
+2025-10-20 21:29:32,268 - INFO -    LINKEDIN: 10 results
+2025-10-20 21:29:32,269 - INFO - Log saved to: logs/search_log.json

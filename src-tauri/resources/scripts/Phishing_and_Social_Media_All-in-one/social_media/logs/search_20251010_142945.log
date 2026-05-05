@@ -1,0 +1,147 @@
+2025-10-10 14:29:45,459 - INFO - [START] Starting social media search process - Query: 'aswon'
+2025-10-10 14:29:45,460 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-10-10 14:29:59,571 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-10-10 14:29:59,571 - INFO - [INFO] Starting step: Save parameters
+2025-10-10 14:29:59,571 - INFO - [OK] Step completed: Save parameters
+2025-10-10 14:29:59,571 - INFO - [INFO] Starting step: Execute social media search
+2025-10-10 14:30:01,799 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=0&callback=google.search.cse.api0
+2025-10-10 14:30:03,796 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=10&callback=google.search.cse.api10
+2025-10-10 14:30:08,705 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=20&callback=google.search.cse.api20
+2025-10-10 14:30:11,062 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=30&callback=google.search.cse.api30
+2025-10-10 14:30:13,519 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=40&callback=google.search.cse.api40
+2025-10-10 14:30:13,532 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:30:13,544 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:16,550 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:30:19,257 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=50&callback=google.search.cse.api50
+2025-10-10 14:30:22,091 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=60&callback=google.search.cse.api60
+2025-10-10 14:30:24,551 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=70&callback=google.search.cse.api70
+2025-10-10 14:30:24,563 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:30:24,579 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:27,585 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:30:32,368 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=80&callback=google.search.cse.api80
+2025-10-10 14:30:32,375 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:30:32,375 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:35,380 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:30:40,760 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLH6DUtzyeS2h9Ss4f0BosZ%3A1760077786870&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=90&callback=google.search.cse.api90
+2025-10-10 14:30:40,765 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:30:40,766 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:43,772 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:30:43,776 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:30:43,777 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:46,781 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:30:52,130 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=0&callback=google.search.cse.api0
+2025-10-10 14:30:52,138 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:30:52,138 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:30:55,143 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:00,218 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=10&callback=google.search.cse.api10
+2025-10-10 14:31:00,226 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:31:00,226 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:03,232 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:10,457 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=20&callback=google.search.cse.api20
+2025-10-10 14:31:10,466 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:31:10,466 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:13,472 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:18,702 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=30&callback=google.search.cse.api30
+2025-10-10 14:31:18,710 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:31:18,711 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:21,716 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:26,944 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=40&callback=google.search.cse.api40
+2025-10-10 14:31:26,949 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:31:26,950 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:29,956 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:29,959 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:31:29,959 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:32,964 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:42,004 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=50&callback=google.search.cse.api50
+2025-10-10 14:31:42,014 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:31:42,014 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:45,020 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:49,983 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=60&callback=google.search.cse.api60
+2025-10-10 14:31:49,987 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:31:49,988 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:31:52,994 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:31:57,635 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=70&callback=google.search.cse.api70
+2025-10-10 14:31:57,640 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0005)
+2025-10-10 14:31:57,640 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:00,644 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:05,266 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=80&callback=google.search.cse.api80
+2025-10-10 14:32:05,273 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:32:05,274 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:08,279 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:15,275 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhIGXWSF7sa4LCCXBqh6Hr_f%3A1760077790364&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=90&callback=google.search.cse.api90
+2025-10-10 14:32:15,279 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:32:15,280 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:18,285 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:18,289 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:32:18,290 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:21,295 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:25,984 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=0&callback=google.search.cse.api0
+2025-10-10 14:32:28,382 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=10&callback=google.search.cse.api10
+2025-10-10 14:32:30,932 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=20&callback=google.search.cse.api20
+2025-10-10 14:32:33,156 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=30&callback=google.search.cse.api30
+2025-10-10 14:32:35,580 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=40&callback=google.search.cse.api40
+2025-10-10 14:32:35,591 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:32:35,616 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:38,622 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:43,536 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=50&callback=google.search.cse.api50
+2025-10-10 14:32:45,704 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=60&callback=google.search.cse.api60
+2025-10-10 14:32:47,947 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=70&callback=google.search.cse.api70
+2025-10-10 14:32:49,903 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=80&callback=google.search.cse.api80
+2025-10-10 14:32:52,187 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhKqoHqqeZXCBySSRbF1T3uS%3A1760077793862&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=90&callback=google.search.cse.api90
+2025-10-10 14:32:52,191 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:32:52,211 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:32:55,217 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:32:56,944 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=0&callback=google.search.cse.api0
+2025-10-10 14:32:59,126 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=10&callback=google.search.cse.api10
+2025-10-10 14:32:59,135 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:32:59,135 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:02,141 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:33:06,657 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=20&callback=google.search.cse.api20
+2025-10-10 14:33:06,660 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:33:06,661 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:09,666 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:33:14,348 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=30&callback=google.search.cse.api30
+2025-10-10 14:33:14,358 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:33:14,359 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:17,364 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:33:21,856 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=40&callback=google.search.cse.api40
+2025-10-10 14:33:21,859 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:33:21,859 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:24,865 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:33:24,879 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:33:24,879 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:27,884 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:33:52,557 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=50&callback=google.search.cse.api50
+2025-10-10 14:33:52,563 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:33:52,590 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:33:55,596 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:01,361 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=60&callback=google.search.cse.api60
+2025-10-10 14:34:01,369 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:34:01,369 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:34:04,375 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:08,839 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=70&callback=google.search.cse.api70
+2025-10-10 14:34:08,845 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0003)
+2025-10-10 14:34:08,845 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:34:11,851 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:16,421 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=80&callback=google.search.cse.api80
+2025-10-10 14:34:16,426 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:34:16,435 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:34:19,441 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:23,990 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhI6Zfti15nxIvxtbnMemSgH%3A1760077797255&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=aswon&start=90&callback=google.search.cse.api90
+2025-10-10 14:34:23,994 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0004)
+2025-10-10 14:34:23,995 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:34:27,000 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:27,006 - DEBUG - GETCONF __owningcontrollerprocess (runtime: 0.0002)
+2025-10-10 14:34:27,007 - INFO - TOR cport auth: True. TOR NEW IDENTITY. Sleep 3 sec.
+2025-10-10 14:34:30,012 - INFO - Error while receiving a control message (SocketClosed): received exception "read of closed file"
+2025-10-10 14:34:33,022 - INFO - [OK] Step completed: Execute social media search
+2025-10-10 14:34:33,022 - INFO - [SUCCESS] Search process completed!
+2025-10-10 14:34:33,022 - INFO - [SUMMARY] Search Summary:
+2025-10-10 14:34:33,022 - INFO -    Query keyword: aswon
+2025-10-10 14:34:33,022 - INFO -    Search platforms: 4 platforms
+2025-10-10 14:34:33,022 - INFO -    Total results: 191
+2025-10-10 14:34:33,022 - INFO -    FACEBOOK: 71 results
+2025-10-10 14:34:33,023 - INFO -    TWITTER: 8 results
+2025-10-10 14:34:33,023 - INFO -    INSTAGRAM: 100 results
+2025-10-10 14:34:33,023 - INFO -    LINKEDIN: 12 results
+2025-10-10 14:34:33,025 - INFO - Log saved to: logs/search_log.json

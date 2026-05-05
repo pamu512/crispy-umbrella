@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: ransomware_live_event_victim
+    volumes:
+      - ./output:/app/output
+    env_file:
+      - .env
+    # 可選：如果你有把 main.py 改成讀 env 變數
+    environment:
+      START_DATE: "2024-01-01"
+      END_DATE: "2025-02-01"

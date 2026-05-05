@@ -1,0 +1,4 @@
+# `main.py` uses stdlib only (urllib, sqlite3). Legacy helpers may still reference optional deps.
+# requests>=2.28.0
+# python-dotenv>=1.0.0
+# pycountry>=23.12.11

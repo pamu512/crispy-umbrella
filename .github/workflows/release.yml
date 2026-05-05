@@ -1,0 +1,124 @@
+# Cross-platform release builds: push a tag like `v0.2.0` to publish DMG, MSI, AppImage (and related bundles).
+#
+# Note: GitHub-hosted `ubuntu-20.04` runners were retired; Linux uses `ubuntu-22.04` with the
+# WebKit/GTK stack required for Tauri AppImage/DEB (see apt list below).
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  publish:
+    name: ${{ matrix.os }} — Tauri bundle
+    concurrency:
+      group: release-${{ github.ref }}-${{ matrix.os }}
+      cancel-in-progress: true
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            tauri_build_args: ""
+          - os: windows-latest
+            tauri_build_args: ""
+          # Explicit GNU triple for the Linux/AppImage artifact (native x86_64 runner).
+          - os: ubuntu-22.04
+            tauri_build_args: "--target x86_64-unknown-linux-gnu"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Ensure rustup shims on PATH
+        shell: bash
+        run: echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Linux system packages (WebKit / GTK / AppImage tooling)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            pkg-config
+
+      - name: Ensure Rust target (Linux x86_64 GNU)
+        if: runner.os == 'Linux'
+        run: rustup target add x86_64-unknown-linux-gnu
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install PyInstaller and ingestion requirements (sidecar freeze)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip wheel setuptools
+          pip install pyinstaller
+          pip install \
+            -r src-tauri/resources/scripts/Compromised_user_Mac/requirements.txt \
+            -r src-tauri/resources/scripts/Ransomware_live_event_victim/requirements.txt \
+            -r src-tauri/resources/scripts/CVE_Project_NVD/requirements.txt \
+            -r src-tauri/resources/scripts/Intelx_Crawler/requirements.txt
+
+      - name: Freeze Python ingestion tools (host triple → src-tauri/binaries/)
+        run: npm run build:python
+
+      - name: Build installers and attach to GitHub Release
+        uses: tauri-apps/tauri-action@v0.6.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: CTI Command Center ${{ github.ref_name }}
+          releaseBody: |
+            Desktop installers built from `${{ github.sha }}`.
+
+            Includes PyInstaller sidecars for ingestion tools where configured (`bundle.externalBin`).
+          generateReleaseNotes: true
+          prerelease: false
+          retryAttempts: 2
+          # Verbose Tauri/build logs (disable after Linux AppImage is stable if uploads grow too large).
+          includeDebug: true
+          # Linux: explicit AppImage/deb target; macOS/Windows use empty string via matrix.
+          args: ${{ matrix.tauri_build_args }}
+          # Repo-root `package.json` (`npm run tauri`); CLI resolves `src-tauri/`.
+          tauriScript: npm run tauri

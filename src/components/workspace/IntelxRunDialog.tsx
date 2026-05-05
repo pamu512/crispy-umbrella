@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useWorkspace } from "@/components/WorkspaceProvider"
 import { invokeRunProject, type IntelxRunParams } from "@/lib/run-project"
+import { useBundledScriptsRoot } from "@/lib/use-bundled-scripts-root"
 
 const DEFAULT_START = "2000-01-01"
 const DEFAULT_END = "2099-12-31"
@@ -31,6 +32,7 @@ export function IntelxRunDialog({
   onStarted: () => void
 }) {
   const { scriptsRoot } = useWorkspace()
+  const effectiveScriptsRoot = useBundledScriptsRoot(scriptsRoot)
   const [query, setQuery] = React.useState("")
   const [startDate, setStartDate] = React.useState(DEFAULT_START)
   const [endDate, setEndDate] = React.useState(DEFAULT_END)
@@ -61,8 +63,8 @@ export function IntelxRunDialog({
       searchLimit: searchLimit.trim() || DEFAULT_LIMIT,
     }
     try {
-      await invokeRunProject(workspacePath, "Intelx_Crawler", "sh", params, null, null, null, {
-        scriptsRoot: scriptsRoot ?? undefined,
+      await invokeRunProject(workspacePath, "Intelx_Crawler", "python", params, null, null, null, {
+        scriptsRoot: effectiveScriptsRoot,
       })
       onStarted()
       onOpenChange(false)
@@ -78,10 +80,11 @@ export function IntelxRunDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-panel max-w-md border-white/15 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Run IntelX</DialogTitle>
+          <DialogTitle>Native IntelX</DialogTitle>
           <DialogDescription>
-            Docker Compose runs <code className="font-mono text-xs">intelx-scraper</code> with four
-            stdin lines (same as bacongris workflow_runner): target, start date, end date, search limit.
+            Executes native sync (<code className="font-mono text-xs">intelx_native_sync.py</code> under
+            bundled Resource/scripts). Four stdin lines: target, start date, end date, search limit. The host
+            sets <code className="font-mono text-xs">CTI_DB_PATH</code> to your canonical vault.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-1">
@@ -137,7 +140,7 @@ export function IntelxRunDialog({
             Cancel
           </Button>
           <Button type="button" disabled={busy} onClick={() => void submit()}>
-            {busy ? "Starting…" : "Run Docker job"}
+            {busy ? "Starting…" : "Initialize Hunter Sync."}
           </Button>
         </DialogFooter>
       </DialogContent>

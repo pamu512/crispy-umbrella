@@ -1,0 +1,13 @@
+2025-11-09 11:46:43,892 - INFO - [START] Starting social media search process - Query: 'Linux'
+2025-11-09 11:46:43,893 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-09 11:47:06,090 - INFO - Added date sorting for FACEBOOK
+2025-11-09 11:47:06,091 - INFO - Added date sorting for TWITTER
+2025-11-09 11:47:06,091 - INFO - Added date sorting for INSTAGRAM
+2025-11-09 11:47:06,091 - INFO - Added date sorting for LINKEDIN
+2025-11-09 11:47:06,091 - INFO - Added date sorting for TIKTOK
+2025-11-09 11:47:06,091 - INFO - Added date sorting for PINTEREST
+2025-11-09 11:47:06,091 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-09 11:47:06,091 - INFO - [INFO] Starting step: Save parameters
+2025-11-09 11:47:06,092 - INFO - [OK] Step completed: Save parameters
+2025-11-09 11:47:06,092 - INFO - [INFO] Starting step: Execute social media search
+2025-11-09 11:47:28,013 - INFO - Log saved to: logs/search_log.json

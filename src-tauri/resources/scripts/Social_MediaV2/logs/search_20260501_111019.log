@@ -1,0 +1,64 @@
+2026-05-01 11:10:19,853 - INFO - [START] Starting social media search process - Query: 'Lalamove'
+2026-05-01 11:10:19,854 - INFO - [OUTPUT] Output path: '/Users/pamu/Downloads/All_Scripts/Social_MediaV2/output'
+2026-05-01 11:10:19,854 - INFO - [FILTER] Date filter: 2025-01-01 to 2026-05-31
+2026-05-01 11:10:19,854 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2026-05-01 11:10:20,086 - WARNING - Error occurred while getting CSE parameters (attempt 1): BrowserType.launch: Executable doesn't exist at /Users/pamu/Library/Caches/ms-playwright/chromium_headless_shell-1187/chrome-mac/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-05-01 11:10:20,087 - INFO - [RETRY] Retrying parameter retrieval (attempt 2)
+2026-05-01 11:10:22,217 - WARNING - Error occurred while getting CSE parameters (attempt 2): BrowserType.launch: Executable doesn't exist at /Users/pamu/Library/Caches/ms-playwright/chromium_headless_shell-1187/chrome-mac/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-05-01 11:10:22,217 - INFO - [RETRY] Retrying parameter retrieval (attempt 3)
+2026-05-01 11:10:26,352 - WARNING - Error occurred while getting CSE parameters (attempt 3): BrowserType.launch: Executable doesn't exist at /Users/pamu/Library/Caches/ms-playwright/chromium_headless_shell-1187/chrome-mac/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-05-01 11:10:26,352 - ERROR - [ERROR] Step failed: Get all platform CSE parameters - Error occurred while getting CSE parameters (attempt 3): BrowserType.launch: Executable doesn't exist at /Users/pamu/Library/Caches/ms-playwright/chromium_headless_shell-1187/chrome-mac/headless_shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-05-01 11:10:26,353 - INFO - [INFO] Starting step: Execute social media search
+2026-05-01 11:10:26,353 - INFO - [DEBUG] Output path received: /Users/pamu/Downloads/All_Scripts/Social_MediaV2/output
+2026-05-01 11:10:26,353 - INFO - [DEBUG] Output path type: <class 'str'>
+2026-05-01 11:19:29,198 - INFO - [OK] Step completed: Execute social media search
+2026-05-01 11:19:29,199 - INFO - [SUCCESS] Search process completed!
+2026-05-01 11:19:29,199 - INFO - [SUMMARY] Search Summary:
+2026-05-01 11:19:29,199 - INFO -    Query keyword: Lalamove
+2026-05-01 11:19:29,199 - INFO -    Search platforms: 9 platforms
+2026-05-01 11:19:29,199 - INFO -    Total results: 0
+2026-05-01 11:19:29,199 - INFO -    FACEBOOK: 0 results
+2026-05-01 11:19:29,199 - INFO -    TWITTER: 0 results
+2026-05-01 11:19:29,199 - INFO -    INSTAGRAM: 0 results
+2026-05-01 11:19:29,199 - INFO -    LINKEDIN: 0 results
+2026-05-01 11:19:29,199 - INFO -    TIKTOK: 0 results
+2026-05-01 11:19:29,199 - INFO -    PINTEREST: 0 results
+2026-05-01 11:19:29,199 - INFO -    YOUTUBE: 0 results
+2026-05-01 11:19:29,199 - INFO -    REDDIT: 0 results
+2026-05-01 11:19:29,199 - INFO -    SNAPCHAT: 0 results
+2026-05-01 11:19:29,199 - INFO - Log saved to: logs/search_log.json
+2026-05-01 11:19:29,199 - INFO - [SHUTDOWN] Stopping and removing all containers...
+2026-05-01 11:19:29,199 - INFO - [SHUTDOWN] Using docker-compose down from /Users/pamu/Downloads/All_Scripts/Social_MediaV2
+2026-05-01 11:19:29,246 - INFO - [SHUTDOWN] docker-compose down completed successfully

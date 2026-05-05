@@ -1,0 +1,21 @@
+2025-10-08 11:59:45,889 - INFO - 🚀 Starting social media search process - Query: 'Amy'
+2025-10-08 11:59:45,890 - INFO - 🔄 Starting step: Get all platform CSE parameters
+2025-10-08 12:00:01,119 - INFO - ✅ Step completed: Get all platform CSE parameters
+2025-10-08 12:00:01,120 - INFO - 🔄 Starting step: Save parameters
+2025-10-08 12:00:01,120 - INFO - ✅ Step completed: Save parameters
+2025-10-08 12:00:01,120 - INFO - 🔄 Starting step: Execute social media search
+2025-10-08 12:00:10,031 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLr8DNzVpsjrrZ6oBMQBce2%3A1759895989667&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest&q=Amy&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:12,956 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhLm5ohXIbiKx8CE5sg0ac0i%3A1759895993525&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest&q=Amy&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:14,764 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhIrIa3Gl0h_oK0Qk_KS1s5Y%3A1759895997099&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest&q=Amy&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:16,712 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhLFY-6JIVDPC6e_WEfKpvFv%3A1759896000577&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest&q=Amy&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:16,715 - INFO - ✅ Step completed: Execute social media search
+2025-10-08 12:00:16,715 - INFO - 🎉 Search process completed!
+2025-10-08 12:00:16,715 - INFO - 📊 Search Summary:
+2025-10-08 12:00:16,716 - INFO -    Query keyword: Amy
+2025-10-08 12:00:16,716 - INFO -    Search platforms: 4 platforms
+2025-10-08 12:00:16,716 - INFO -    Total results: 30
+2025-10-08 12:00:16,716 - INFO -    FACEBOOK: 0 results
+2025-10-08 12:00:16,716 - INFO -    TWITTER: 10 results
+2025-10-08 12:00:16,716 - INFO -    INSTAGRAM: 10 results
+2025-10-08 12:00:16,716 - INFO -    LINKEDIN: 10 results
+2025-10-08 12:00:16,717 - INFO - Log saved to: logs/search_log.json

@@ -11,9 +11,12 @@ import { useScriptConsole } from "@/components/workspace/ScriptConsoleProvider"
 export function TerminalDrawer({
   forcedOpen,
   onForcedOpenChange,
+  /** Dock inside the left column instead of the full viewport (persistent agent sidebar). */
+  embedded = false,
 }: {
   forcedOpen: boolean
   onForcedOpenChange: (v: boolean) => void
+  embedded?: boolean
 }) {
   const { lines, clearLines } = useScriptConsole()
   const [dismissed, setDismissed] = React.useState(false)
@@ -32,6 +35,14 @@ export function TerminalDrawer({
 
   const visible = forcedOpen || (lines.length > 0 && !dismissed)
 
+  const panelShell = embedded
+    ? "relative z-10 w-full flex flex-col overflow-hidden border-t border-white/10 bg-zinc-950/95 font-mono text-[11px] backdrop-blur-md"
+    : "fixed bottom-0 left-0 right-0 z-50 flex flex-col overflow-hidden border-t border-white/10 bg-zinc-950/95 font-mono text-[11px] backdrop-blur-md"
+
+  const fabShell = embedded
+    ? "absolute bottom-2 right-2 z-40 rounded-full border border-cyan-500/30 bg-zinc-950/90 px-4 py-2 font-mono text-[11px] text-cyan-200 shadow-lg backdrop-blur-md"
+    : "fixed bottom-4 right-4 z-40 rounded-full border border-cyan-500/30 bg-zinc-950/90 px-4 py-2 font-mono text-[11px] text-cyan-200 shadow-lg backdrop-blur-md"
+
   return (
     <>
       <AnimatePresence>
@@ -39,10 +50,10 @@ export function TerminalDrawer({
           <motion.div
             key="term"
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "min(38vh, 320px)", opacity: 1 }}
+            animate={{ height: embedded ? "min(32vh, 280px)" : "min(38vh, 320px)", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-50 flex flex-col overflow-hidden border-t border-white/10 bg-zinc-950/95 font-mono text-[11px] backdrop-blur-md"
+            className={panelShell}
           >
             <div className="flex h-9 shrink-0 items-center border-b border-white/10 px-3">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -105,7 +116,7 @@ export function TerminalDrawer({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed bottom-4 right-4 z-40 rounded-full border border-cyan-500/30 bg-zinc-950/90 px-4 py-2 font-mono text-[11px] text-cyan-200 shadow-lg backdrop-blur-md"
+            className={fabShell}
             onClick={() => {
               setDismissed(false)
               onForcedOpenChange(true)
@@ -116,5 +127,60 @@ export function TerminalDrawer({
         ) : null}
       </AnimatePresence>
     </>
+  )
+}
+
+/** Always-visible docked console for the dashboard center column (fills parent height). */
+export function SplitHostConsole() {
+  const { lines, clearLines } = useScriptConsole()
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const prevLen = React.useRef(0)
+
+  React.useEffect(() => {
+    if (lines.length > prevLen.current) {
+      const el = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+      if (el) (el as HTMLElement).scrollTop = (el as HTMLElement).scrollHeight
+    }
+    prevLen.current = lines.length
+  }, [lines])
+
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-b-lg border border-t border-white/10 bg-zinc-950/95 font-mono text-[11px] backdrop-blur-md">
+      <div className="flex h-8 shrink-0 items-center border-b border-white/10 px-2">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Host console
+        </span>
+        <span className="ml-2 font-mono text-[9px] text-zinc-500">{lines.length} lines</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="ml-auto h-7 px-2 text-[10px] text-muted-foreground"
+          onClick={() => clearLines()}
+        >
+          <Trash2 className="mr-1 size-3" />
+          Clear
+        </Button>
+      </div>
+      <ScrollArea className="min-h-0 flex-1 px-2 py-2" ref={scrollRef}>
+        {lines.map((log) => (
+          <div key={log.id} className="mb-1 flex gap-2 leading-tight text-zinc-300">
+            <span className="shrink-0 text-zinc-600">{log.timestamp}</span>
+            <span className="shrink-0 text-emerald-500/90">[{log.project}]</span>
+            <span
+              className={cn(
+                "break-all",
+                log.message.startsWith("ERROR:") && "text-red-400"
+              )}
+            >
+              {log.message}
+            </span>
+          </div>
+        ))}
+        {!lines.length ? (
+          <p className="text-zinc-600">Idle — Armory / hub runs stream here. Watch for sync errors.</p>
+        ) : null}
+      </ScrollArea>
+    </div>
   )
 }

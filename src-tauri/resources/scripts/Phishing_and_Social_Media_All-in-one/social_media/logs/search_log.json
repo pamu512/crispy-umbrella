@@ -1,0 +1,176 @@
+{
+  "session_id": "20260217_190311",
+  "start_time": "2026-02-17T19:03:11.201064",
+  "steps": [
+    {
+      "step": "Get all platform CSE parameters",
+      "timestamp": "2026-02-17T19:03:11.201602",
+      "status": "in_progress",
+      "details": {},
+      "error": null
+    },
+    {
+      "step": "Get all platform CSE parameters",
+      "timestamp": "2026-02-17T19:03:40.903708",
+      "status": "completed",
+      "details": {
+        "platforms_count": 6,
+        "platforms": [
+          "facebook",
+          "twitter",
+          "instagram",
+          "linkedin",
+          "tiktok",
+          "pinterest"
+        ],
+        "attempts": 1,
+        "date_sorting_enabled": true
+      },
+      "error": null
+    },
+    {
+      "step": "Save parameters",
+      "timestamp": "2026-02-17T19:03:40.903840",
+      "status": "in_progress",
+      "details": {},
+      "error": null
+    },
+    {
+      "step": "Save parameters",
+      "timestamp": "2026-02-17T19:03:40.911967",
+      "status": "completed",
+      "details": {
+        "filename": "cse_parameters.json"
+      },
+      "error": null
+    },
+    {
+      "step": "Execute social media search",
+      "timestamp": "2026-02-17T19:03:40.912698",
+      "status": "in_progress",
+      "details": {
+        "query": "natixis",
+        "total_num": 100,
+        "using_updated_params": true,
+        "output_path": "/app/output"
+      },
+      "error": null
+    },
+    {
+      "step": "Execute social media search",
+      "timestamp": "2026-02-17T19:29:05.255587",
+      "status": "completed",
+      "details": {
+        "platforms_searched": [
+          "facebook",
+          "twitter",
+          "instagram",
+          "linkedin",
+          "tiktok",
+          "pinterest"
+        ],
+        "results_summary": {
+          "facebook": 100,
+          "twitter": 100,
+          "instagram": 100,
+          "linkedin": 100,
+          "tiktok": 100,
+          "pinterest": 38
+        },
+        "total_results": 538
+      },
+      "error": null
+    }
+  ],
+  "parameters": {
+    "facebook": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "294a079ba2d4267d5",
+      "safe": "active",
+      "cse_tok": "AEXjvhKciVFM3jmbhqsbn1XRsjKA:1771354993351",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/facebookcse.html?q=test&sort=date"
+    },
+    "twitter": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "3a9b377185eceb40a",
+      "safe": "active",
+      "cse_tok": "AEXjvhKeuWaceW4odthUgovLDYW8:1771354997367",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/twittercse.html?q=test&sort=date"
+    },
+    "instagram": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "c4b97eed1414fcb14",
+      "safe": "active",
+      "cse_tok": "AEXjvhIVkNxdTIIlLCsc15fQTrAU:1771355001363",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/instagramcse.html?q=test&sort=date"
+    },
+    "linkedin": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "3fb7efb248d74e652",
+      "safe": "active",
+      "cse_tok": "AEXjvhJ2C1asr4DLHkRAxcjBnfmY:1771355006338",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/linkedincse.html?q=test&sort=date"
+    },
+    "tiktok": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "c0311d8946a51b053",
+      "safe": "active",
+      "cse_tok": "AEXjvhL5JvK1j59OqPe00KSZq7R7:1771355014053",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/tiktokcse.html?q=test&sort=date"
+    },
+    "pinterest": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "f71e4ed980f4c082",
+      "cx": "cee97518dc742cf1e",
+      "safe": "active",
+      "cse_tok": "AEXjvhKpisPEJ405Eihs0CcQGl3z:1771355018074",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/pinterestcse.html?q=test&sort=date"
+    }
+  },
+  "results": {
+    "facebook": 100,
+    "twitter": 100,
+    "instagram": 100,
+    "linkedin": 100,
+    "tiktok": 100,
+    "pinterest": 38
+  },
+  "errors": [],
+  "end_time": "2026-02-17T19:29:05.256285",
+  "duration": "0:25:54.055221"
+}

@@ -1,0 +1,106 @@
+@startuml
+title ASM System Architecture (Dockerized with Celery, FastAPI, Postgres)
+
+' Components
+actor User as "User (API Client)"
+
+cloud "Docker Environment" {
+  node "FastAPI App" as api {
+    [main.py] as apimain
+    [endpoints.py] as apiend
+    [init_db.py] as initdb
+    [database.py] as dbconn
+    [models.py] as dbmodels
+    [schemas.py] as dbschemas
+  }
+
+  node "Celery Worker" as worker {
+    [tasks.py] as tasks
+    [celery_app.py] as celapp
+  }
+
+  node "Celery Beat" as beat {
+    [celery_app.py] as celappbeat
+  }
+
+  database "Postgres DB" as pgdb {
+    [ASM Schema] as asmschema
+  }
+
+  queue "Redis (Broker)" as redis
+
+  folder "apis/" as apis {
+    [dns.py]
+    [shodan.py]
+    [fofa.py]
+    [pentest_tools.py]
+    [crt_sh.py]
+    [securitytrails.py]
+    [ssllabs.py]
+    [whois.py]
+  }
+
+  folder "processors/" as processors {
+    [subdomain_processor.py]
+    [mx_processor.py]
+  }
+
+  folder "utils/" as utils {
+    [logging_utils.py]
+    [validators.py]
+    [formatters.py]
+  }
+
+  folder "output/" as output {
+    [exporter.py]
+  }
+
+  folder "migrations/" as migrations {
+    [Alembic Files]
+  }
+}
+
+' Flows
+User --> api : API Calls (e.g., /scans/instant)
+api --> pgdb : SQLAlchemy Queries/Inserts
+api --> redis : Trigger Celery Tasks (e.g., scan_domain_task)
+redis --> worker : Queue Tasks
+worker --> pgdb : Store Scan Data
+worker --> apis : Call APIs (dns, shodan, etc.)
+worker --> apis : Query crt.sh, Pentest-Tools, FOFA, SecurityTrails, Shodan
+worker --> processors : Process Records
+worker --> utils : Validation/Formatting
+worker --> output : Generate Files (on API request)
+beat --> redis : Schedule Tasks (daily/weekly/monthly)
+initdb --> migrations : Run Alembic on Startup
+migrations --> pgdb : Create/Update Schema
+
+' Notes
+note left of User
+  APIs:
+  - POST /subscriptions/add {domain, frequency}
+  - POST /scans/instant {domain}
+  - GET /scans/status/{scan_id}
+  - DELETE /scans/terminate/{scan_id}
+  - GET /scans/result/{scan_id}/json
+  - GET /scans/result/{scan_id}/csv or /xlsx
+end note
+
+note right of pgdb
+  Tables: domains, scans, subdomain_data
+  Relationships: domains (1:N) scans (1:N) subdomain_data
+end note
+
+note right of worker
+  Tasks: scan_domain_task (core scanning)
+  check_scheduled_scans (queue pending subscriptions)
+  Prioritization: Instant scans are flagged `priority` and run before other pending scans.
+  Concurrency: Controlled by `MAX_CONCURRENT_SCANS` env.
+end note
+
+note bottom of beat
+  Schedules: Daily / Weekly (Mon 00:00) / Monthly (1st 00:00) via Celery Beat
+  Beat enqueues subscription scans in ascending domain_id order; priority scans are inserted ahead of pending non-priority scans.
+end note
+
+@enduml

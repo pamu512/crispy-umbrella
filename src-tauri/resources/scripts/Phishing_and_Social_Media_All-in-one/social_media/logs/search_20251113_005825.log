@@ -1,0 +1,30 @@
+2025-11-13 00:58:25,358 - INFO - [START] Starting social media search process - Query: 'Threecare'
+2025-11-13 00:58:25,358 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-13 00:58:25,358 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-13 00:58:50,747 - INFO - Added date sorting for FACEBOOK
+2025-11-13 00:58:50,747 - INFO - Added date sorting for TWITTER
+2025-11-13 00:58:50,748 - INFO - Added date sorting for INSTAGRAM
+2025-11-13 00:58:50,748 - INFO - Added date sorting for LINKEDIN
+2025-11-13 00:58:50,749 - INFO - Added date sorting for TIKTOK
+2025-11-13 00:58:50,749 - INFO - Added date sorting for PINTEREST
+2025-11-13 00:58:50,750 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-13 00:58:50,750 - INFO - [INFO] Starting step: Save parameters
+2025-11-13 00:58:50,750 - INFO - [OK] Step completed: Save parameters
+2025-11-13 00:58:50,750 - INFO - [INFO] Starting step: Execute social media search
+2025-11-13 01:26:27,336 - INFO - [OK] Step completed: Execute social media search
+2025-11-13 01:26:27,336 - INFO - [SUCCESS] Search process completed!
+2025-11-13 01:26:27,337 - INFO - [SUMMARY] Search Summary:
+2025-11-13 01:26:27,337 - INFO -    Query keyword: Threecare
+2025-11-13 01:26:27,337 - INFO -    Search platforms: 6 platforms
+2025-11-13 01:26:27,337 - INFO -    Total results: 511
+2025-11-13 01:26:27,337 - INFO -    FACEBOOK: 100 results
+2025-11-13 01:26:27,337 - INFO -    TWITTER: 100 results
+2025-11-13 01:26:27,337 - INFO -    INSTAGRAM: 100 results
+2025-11-13 01:26:27,338 - INFO -    LINKEDIN: 100 results
+2025-11-13 01:26:27,338 - INFO -    TIKTOK: 100 results
+2025-11-13 01:26:27,338 - INFO -    PINTEREST: 11 results
+2025-11-13 01:26:27,343 - INFO - Log saved to: logs/search_log.json
+2025-11-13 01:26:27,343 - INFO - [SHUTDOWN] Stopping and removing all containers...
+2025-11-13 01:26:27,343 - INFO - [SHUTDOWN] Falling back to individual container stop/remove
+2025-11-13 01:26:27,357 - INFO - [SHUTDOWN] Container docker-tor does not exist
+2025-11-13 01:26:27,358 - INFO - [SHUTDOWN] All containers shutdown and removal process completed

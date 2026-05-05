@@ -1,8 +1,15 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
-import "./globals.css"
+
+import { AppToastProvider } from "@/components/app-toast"
+import { OllamaSettingsProvider } from "@/components/OllamaSettingsProvider"
+import { PersistentAppLayout } from "@/components/persistent-app-layout"
+import { AGENT_TAGLINE, SITE_TITLE } from "@/components/Sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { WorkspaceProvider } from "@/components/WorkspaceProvider"
+
+import "./globals.css"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,8 +22,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "CTI Command Center",
-  description: "Agent-first investigation workspace",
+  title: SITE_TITLE,
+  description: AGENT_TAGLINE,
 }
 
 export default function RootLayout({
@@ -27,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} min-h-screen bg-background font-sans antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} h-screen overflow-hidden bg-background font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -35,7 +42,15 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <OllamaSettingsProvider>
+              <AppToastProvider>
+                <WorkspaceProvider>
+                  <PersistentAppLayout>{children}</PersistentAppLayout>
+                </WorkspaceProvider>
+              </AppToastProvider>
+            </OllamaSettingsProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

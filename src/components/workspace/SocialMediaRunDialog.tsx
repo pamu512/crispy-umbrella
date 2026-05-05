@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useWorkspace } from "@/components/WorkspaceProvider"
 import { invokeRunProject, type SocialMediaRunParams } from "@/lib/run-project"
+import { useBundledScriptsRoot } from "@/lib/use-bundled-scripts-root"
 
 const DEFAULT_NUM = "10"
 
@@ -29,6 +30,7 @@ export function SocialMediaRunDialog({
   onStarted: () => void
 }) {
   const { scriptsRoot } = useWorkspace()
+  const effectiveScriptsRoot = useBundledScriptsRoot(scriptsRoot)
   const [target, setTarget] = React.useState("")
   const [startDate, setStartDate] = React.useState("")
   const [endDate, setEndDate] = React.useState("")
@@ -47,7 +49,7 @@ export function SocialMediaRunDialog({
     if (!workspacePath) return
     const t = target.trim()
     if (!t) {
-      setError("Enter a target name (keyword), same as ./docker-run.sh first argument.")
+      setError("Enter a target name (keyword) — same as the project's native run script first argument.")
       return
     }
     setBusy(true)
@@ -59,8 +61,8 @@ export function SocialMediaRunDialog({
       numPerPlatform: numPerPlatform.trim() || DEFAULT_NUM,
     }
     try {
-      await invokeRunProject(workspacePath, "Social_MediaV2", "python", null, params, null, null, {
-        scriptsRoot: scriptsRoot ?? undefined,
+      await invokeRunProject(workspacePath, "Social_MediaV2", "docker", null, params, null, null, {
+        scriptsRoot: effectiveScriptsRoot,
       })
       onStarted()
       onOpenChange(false)
@@ -79,9 +81,9 @@ export function SocialMediaRunDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-panel max-w-md border-white/15 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Run Social Media V2</DialogTitle>
+          <DialogTitle>Native Social Media V2</DialogTitle>
           <DialogDescription>
-            Matches project <code className="font-mono text-xs">docker-run.sh</code>: target name,
+            Matches the bundled project's native entry: target name,
             optional date window (<code className="font-mono text-xs">YYYY-MM-DD</code>), results per
             platform. CSVs go to <code className="font-mono text-xs">Social_MediaV2/output/</code>; on
             success, rows load into <code className="font-mono text-xs">cti_vault.social_media_results</code>.
@@ -137,7 +139,7 @@ export function SocialMediaRunDialog({
             Cancel
           </Button>
           <Button type="button" onClick={() => void submit()} disabled={busy}>
-            {busy ? "Starting…" : "Run"}
+            {busy ? "Starting…" : "Initialize Hunter Sync."}
           </Button>
         </DialogFooter>
       </DialogContent>

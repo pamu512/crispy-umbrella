@@ -1,0 +1,17 @@
+2025-10-08 12:00:47,563 - INFO - 🚀 Starting social media search process - Query: 'Oppo'
+2025-10-08 12:00:47,563 - INFO - 🔄 Starting step: Execute social media search
+2025-10-08 12:00:49,128 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhK6VooxikQmV6BOKeaRMqnA%3A1759893387560&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest&q=Oppo&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:51,254 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhJUrjba5zqP7RsR5rZhVRxD%3A1759893391543&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest&q=Oppo&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:52,972 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhJWt_Ex6QvFUSFRMYJ898vD%3A1759893395681&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest&q=Oppo&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:54,732 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhLFP4UgU1zmN8iMZ6zrjpsM%3A1759893401389&sort=&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest&q=Oppo&start=0&callback=google.search.cse.api0
+2025-10-08 12:00:54,736 - INFO - ✅ Step completed: Execute social media search
+2025-10-08 12:00:54,737 - INFO - 🎉 Search process completed!
+2025-10-08 12:00:54,737 - INFO - 📊 Search Summary:
+2025-10-08 12:00:54,737 - INFO -    Query keyword: Oppo
+2025-10-08 12:00:54,737 - INFO -    Search platforms: 4 platforms
+2025-10-08 12:00:54,737 - INFO -    Total results: 40
+2025-10-08 12:00:54,737 - INFO -    FACEBOOK: 10 results
+2025-10-08 12:00:54,737 - INFO -    TWITTER: 10 results
+2025-10-08 12:00:54,737 - INFO -    INSTAGRAM: 10 results
+2025-10-08 12:00:54,737 - INFO -    LINKEDIN: 10 results
+2025-10-08 12:00:54,738 - INFO - Log saved to: logs/search_log.json

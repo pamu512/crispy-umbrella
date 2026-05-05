@@ -1,0 +1,17 @@
+2025-10-10 14:58:40,639 - INFO - [START] Starting social media search process - Query: 'Wayne'
+2025-10-10 14:58:40,640 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-10-10 14:58:54,779 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-10-10 14:58:54,779 - INFO - [INFO] Starting step: Save parameters
+2025-10-10 14:58:54,779 - INFO - [OK] Step completed: Save parameters
+2025-10-10 14:58:54,779 - INFO - [INFO] Starting step: Execute social media search
+2025-10-10 14:58:54,797 - INFO - [OK] Step completed: Execute social media search
+2025-10-10 14:58:54,797 - INFO - [SUCCESS] Search process completed!
+2025-10-10 14:58:54,797 - INFO - [SUMMARY] Search Summary:
+2025-10-10 14:58:54,797 - INFO -    Query keyword: Wayne
+2025-10-10 14:58:54,797 - INFO -    Search platforms: 4 platforms
+2025-10-10 14:58:54,797 - INFO -    Total results: 0
+2025-10-10 14:58:54,797 - INFO -    FACEBOOK: 0 results
+2025-10-10 14:58:54,797 - INFO -    TWITTER: 0 results
+2025-10-10 14:58:54,797 - INFO -    INSTAGRAM: 0 results
+2025-10-10 14:58:54,797 - INFO -    LINKEDIN: 0 results
+2025-10-10 14:58:54,798 - INFO - Log saved to: logs/search_log.json

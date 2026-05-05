@@ -9,6 +9,7 @@
     "core:default",
     "store:default",
     "dialog:default",
-    "fs:default"
+    "fs:default",
+    "log:default"
   ]
 }

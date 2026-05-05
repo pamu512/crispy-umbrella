@@ -40,6 +40,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         const boot = await ensureCtiWritableLayout()
         setWritableRoot(boot.writableRoot)
         setBundledScriptsRoot(boot.scriptsRoot ?? null)
+        if (boot.dinoMode) {
+          document.documentElement.setAttribute("data-dino-mode", "true")
+        } else {
+          document.documentElement.removeAttribute("data-dino-mode")
+        }
 
         const store = await load("store.json", { autoSave: false } as any)
         const savedPath = await store.get<{ value: string }>("workspace_path")

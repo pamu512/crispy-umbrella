@@ -1,0 +1,26 @@
+2025-11-09 17:35:02,869 - INFO - [START] Starting social media search process - Query: 'Test'
+2025-11-09 17:35:02,869 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-09 17:35:02,869 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-09 17:35:25,292 - INFO - Added date sorting for FACEBOOK
+2025-11-09 17:35:25,293 - INFO - Added date sorting for TWITTER
+2025-11-09 17:35:25,293 - INFO - Added date sorting for INSTAGRAM
+2025-11-09 17:35:25,293 - INFO - Added date sorting for LINKEDIN
+2025-11-09 17:35:25,294 - INFO - Added date sorting for TIKTOK
+2025-11-09 17:35:25,294 - INFO - Added date sorting for PINTEREST
+2025-11-09 17:35:25,295 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-09 17:35:25,295 - INFO - [INFO] Starting step: Save parameters
+2025-11-09 17:35:25,295 - INFO - [OK] Step completed: Save parameters
+2025-11-09 17:35:25,295 - INFO - [INFO] Starting step: Execute social media search
+2025-11-09 17:41:45,228 - INFO - [OK] Step completed: Execute social media search
+2025-11-09 17:41:45,229 - INFO - [SUCCESS] Search process completed!
+2025-11-09 17:41:45,229 - INFO - [SUMMARY] Search Summary:
+2025-11-09 17:41:45,229 - INFO -    Query keyword: Test
+2025-11-09 17:41:45,229 - INFO -    Search platforms: 6 platforms
+2025-11-09 17:41:45,229 - INFO -    Total results: 600
+2025-11-09 17:41:45,229 - INFO -    FACEBOOK: 100 results
+2025-11-09 17:41:45,230 - INFO -    TWITTER: 100 results
+2025-11-09 17:41:45,230 - INFO -    INSTAGRAM: 100 results
+2025-11-09 17:41:45,230 - INFO -    LINKEDIN: 100 results
+2025-11-09 17:41:45,230 - INFO -    TIKTOK: 100 results
+2025-11-09 17:41:45,231 - INFO -    PINTEREST: 100 results
+2025-11-09 17:41:45,233 - INFO - Log saved to: logs/search_log.json

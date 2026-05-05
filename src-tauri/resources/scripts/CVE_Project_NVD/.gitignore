@@ -1,0 +1,20 @@
+# Python 環境
+venv/
+__pycache__/
+*.pyc
+
+# 系統檔案
+.DS_Store
+.python-version
+.commit.json
+
+# 輸出檔案
+*.csv
+progress.txt
+
+# 舊資料
+old/
+
+# 忽略大檔案
+CVE_Project_CVE/cves/
+NVD_CVE/JSON/

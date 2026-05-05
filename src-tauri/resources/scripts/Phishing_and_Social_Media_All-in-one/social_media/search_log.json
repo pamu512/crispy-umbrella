@@ -1,0 +1,140 @@
+{
+  "session_id": "20251008_112558",
+  "start_time": "2025-10-08T11:25:58.468660",
+  "steps": [
+    {
+      "step": "Get all platform CSE parameters",
+      "timestamp": "2025-10-08T11:25:58.471530",
+      "status": "in_progress",
+      "details": {},
+      "error": null
+    },
+    {
+      "step": "Get all platform CSE parameters",
+      "timestamp": "2025-10-08T11:26:20.023929",
+      "status": "completed",
+      "details": {
+        "platforms_count": 4,
+        "platforms": [
+          "facebook",
+          "twitter",
+          "instagram",
+          "linkedin"
+        ],
+        "attempts": 1
+      },
+      "error": null
+    },
+    {
+      "step": "Save parameters",
+      "timestamp": "2025-10-08T11:26:20.024477",
+      "status": "in_progress",
+      "details": {},
+      "error": null
+    },
+    {
+      "step": "Save parameters",
+      "timestamp": "2025-10-08T11:26:20.025003",
+      "status": "completed",
+      "details": {
+        "filename": "cse_parameters.json"
+      },
+      "error": null
+    },
+    {
+      "step": "Execute social media search",
+      "timestamp": "2025-10-08T11:26:20.025083",
+      "status": "in_progress",
+      "details": {
+        "query": "Peter",
+        "total_num": 10,
+        "using_updated_params": true
+      },
+      "error": null
+    },
+    {
+      "step": "Execute social media search",
+      "timestamp": "2025-10-08T11:26:36.112163",
+      "status": "completed",
+      "details": {
+        "platforms_searched": [
+          "facebook",
+          "twitter",
+          "instagram",
+          "linkedin"
+        ],
+        "results_summary": {
+          "facebook": 10,
+          "twitter": 10,
+          "instagram": 10,
+          "linkedin": 10
+        },
+        "total_results": 40
+      },
+      "error": null
+    }
+  ],
+  "parameters": {
+    "facebook": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "6467658b9628de43",
+      "cx": "294a079ba2d4267d5",
+      "safe": "active",
+      "cse_tok": "AEXjvhKLVPX7GOWuFC2rgTRynoqi:1759893963704",
+      "sort": "",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/facebookcse.html?q=test"
+    },
+    "twitter": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "6467658b9628de43",
+      "cx": "a72fbbffee86cd2d2",
+      "safe": "active",
+      "cse_tok": "AEXjvhLOZ6o4kQYuT2t3OX49diGv:1759893969380",
+      "sort": "",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/twittercse.html?q=test"
+    },
+    "instagram": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "6467658b9628de43",
+      "cx": "c4b97eed1414fcb14",
+      "safe": "active",
+      "cse_tok": "AEXjvhJVt5-KODHqp-2hbycMvGz3:1759893973565",
+      "sort": "",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/instagramcse.html?q=test"
+    },
+    "linkedin": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "6467658b9628de43",
+      "cx": "3fb7efb248d74e652",
+      "safe": "active",
+      "cse_tok": "AEXjvhLbOz_rrs4ycbnDBLNfj-_X:1759893979304",
+      "sort": "",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/linkedincse.html?q=test"
+    }
+  },
+  "results": {
+    "facebook": 10,
+    "twitter": 10,
+    "instagram": 10,
+    "linkedin": 10
+  },
+  "errors": [],
+  "end_time": "2025-10-08T11:26:36.112707",
+  "duration": "0:00:37.644047"
+}

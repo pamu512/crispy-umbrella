@@ -1,0 +1,38 @@
+name: Run Brand Scout - Social Media Scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: 'Keyword for social media scan (comma-separated for multiple)'
+        required: true
+      start_date:
+        description: 'Start date (YYYY-MM-DD)'
+        required: true
+      end_date:
+        description: 'End date (YYYY-MM-DD)'
+        required: true
+
+jobs:
+  process_domain_sms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Brand Scout - SMS
+        run: |
+          docker run --privileged --rm -v $(pwd):/workdir br0k3nm1rr0r/brand-scout -sms "${{ github.event.inputs.keyword }}" "${{ github.event.inputs.start_date }}" "${{ github.event.inputs.end_date }}"
+
+      - name: Collect Artifacts
+        shell: bash
+        run: |
+          mkdir -p brand_scout_artifacts
+          for item in *; do
+            if [ "$item" != "brand_scout_artifacts" ] && [ -e "$item" ]; then
+              mv "$item" brand_scout_artifacts/
+            fi
+          done
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "brand-scout-sms-results"
+          path: brand_scout_artifacts/

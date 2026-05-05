@@ -1,0 +1,14 @@
+Brotli==1.1.0
+certifi==2025.8.3
+charset-normalizer==3.4.3
+greenlet==3.2.4
+idna==3.10
+playwright==1.55.0
+pyee==13.0.0
+PySocks==1.7.1
+regex==2025.9.18
+requests==2.32.5
+requests-tor==1.4
+stem==1.8.2
+typing_extensions==4.15.0
+urllib3==2.5.0

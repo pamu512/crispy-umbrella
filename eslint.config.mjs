@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Rust/Tauri output & bundled copies (playwright/.venv under target/resources can exceed ESLint formatter limits).
+    "src-tauri/target/**",
+    "**/.venv/**",
   ]),
 ]);
 

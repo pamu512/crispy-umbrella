@@ -1,5 +1,9 @@
 """
-CTI SQLite vault: WAL, canonical tables, upserts, and agent-friendly reads.
+CTI SQLite vault: path resolution, WAL pragmas on connect, upserts, and agent-friendly reads.
+
+Schema creation and migrations are implemented only in Rust (``src-tauri/src/vault_db.rs``).
+Open the vault through the Tauri host or any code path that calls ``initialize_vault`` / ``open_vault``
+before using this module against a new database file.
 
 Resolution order for the database file (never uses the repo/dev tree unless you pass an explicit path):
 1. ``CTI_DB_PATH`` — absolute path to ``cti_vault.db`` (set by the Tauri host for child processes).
@@ -18,9 +22,6 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
-
-# Bump when DDL changes; keep in sync with Rust ``PRAGMA user_version`` after migrations.
-SCHEMA_VERSION = "2"
 
 
 def _utc_iso() -> str:
@@ -112,7 +113,12 @@ def _assert_select_only(sql: str) -> None:
 
 
 class CTIVault:
-    """SQLite CTI vault with WAL, schema bootstrap, IOC upserts, and feed helpers."""
+    """SQLite CTI vault: WAL + upserts + read helpers.
+
+    DDL and migrations are owned by Rust (``vault_db::initialize_vault``). Open the database from
+    the Tauri host (or any path that runs those migrations) before ingesting; this class does not
+    create tables.
+    """
 
     def __init__(self, db_path: Path | str | None = None) -> None:
         self.db_path = resolve_vault_db_path(db_path)
@@ -128,10 +134,10 @@ class CTIVault:
                 isolation_level=None,
             )
             self._conn.row_factory = sqlite3.Row
-            self._conn.execute("PRAGMA journal_mode=WAL;")
-            self._conn.execute("PRAGMA synchronous=NORMAL;")
             self._conn.execute("PRAGMA busy_timeout=5000;")
             self._conn.execute("PRAGMA foreign_keys=ON;")
+            self._conn.execute("PRAGMA journal_mode=WAL;")
+            self._conn.execute("PRAGMA synchronous=NORMAL;")
         return self._conn
 
     def close(self) -> None:
@@ -140,54 +146,11 @@ class CTIVault:
             self._conn = None
 
     def __enter__(self) -> CTIVault:
-        self.initialize_schema()
+        _ = self.connection
         return self
 
     def __exit__(self, *args: object) -> None:
         self.close()
-
-    def initialize_schema(self) -> None:
-        """Create canonical tables (idempotent) and record ``vault_meta.schema_version``."""
-        c = self.connection
-        c.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS vault_meta (
-                key TEXT PRIMARY KEY NOT NULL,
-                value TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS cve_data (
-                cve_id TEXT PRIMARY KEY NOT NULL,
-                severity_score REAL,
-                published_date TEXT,
-                updated_at TEXT,
-                metadata TEXT
-            );
-
-            CREATE TABLE IF NOT EXISTS ioc_records (
-                ioc_value TEXT NOT NULL,
-                ioc_type TEXT NOT NULL,
-                first_seen TEXT,
-                last_seen TEXT,
-                source_project TEXT,
-                metadata TEXT,
-                PRIMARY KEY (ioc_value, ioc_type)
-            );
-
-            CREATE TABLE IF NOT EXISTS asm_assets (
-                asset_target TEXT PRIMARY KEY NOT NULL,
-                asset_type TEXT,
-                last_scan_at TEXT,
-                status TEXT,
-                metadata TEXT
-            );
-            """
-        )
-        c.execute(
-            "INSERT OR REPLACE INTO vault_meta (key, value) VALUES ('schema_version', ?)",
-            (SCHEMA_VERSION,),
-        )
-        c.commit()
 
     def upsert_cve(
         self,
@@ -517,9 +480,7 @@ class CTIVault:
 
 
 def open_cti_vault() -> sqlite3.Connection:
-    """Backward-compatible: open resolved path with WAL (no schema bootstrap)."""
+    """Open resolved path with the same PRAGMAs as ``CTIVault.connection`` (no DDL)."""
     v = CTIVault()
-    v.connection.execute("PRAGMA journal_mode=WAL;")
-    v.connection.execute("PRAGMA synchronous=NORMAL;")
-    v.connection.execute("PRAGMA busy_timeout=5000;")
+    _ = v.connection
     return v.connection

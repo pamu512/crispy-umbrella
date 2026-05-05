@@ -1,7 +1,8 @@
 //! Writable AppData layout + bundled `Resource/scripts` resolution.
 //! See `resources/scripts/README.txt` for packaging.
 //!
-//! **Python “sidecar”:** The app does not ship an embedded CPython binary. Feature venvs are
+//! **Ingestion sidecars:** PyInstaller-frozen tools from `npm run build:python` are shipped as
+//! `bundle.externalBin` (no host `python3` for those commands). Other feature venvs are
 //! created with the host `python3` / `python` (`python -m venv`), then `pip install -r` from each
 //! bundled project. To ship a fully portable runtime later, replace the venv bootstrap with a
 //! downloaded embeddable Python layout and set `CTI_PYTHON_HOME` (future hook).
@@ -71,12 +72,18 @@ pub fn save_config(app: &AppHandle, cfg: &CtiAppConfig) -> Result<(), String> {
 }
 
 /// Creates `cti-app/`, subdirs, default `config.json` with vault path.
+///
+/// Persists [`crate::vault_db::get_vault_path`] into `vault_db_path` so JSON mirrors the canonical
+/// absolute vault file (same as env `CTI_DB_PATH` when set).
 pub fn init_if_needed(app: &AppHandle) -> Result<CtiAppConfig, String> {
-    let root = ensure_writable_tree(app)?;
+    let _root = ensure_writable_tree(app)?;
     let mut cfg = load_config(app)?;
     let mut changed = false;
-    if cfg.vault_db_path.trim().is_empty() {
-        cfg.vault_db_path = root.join("cti_vault.db").to_string_lossy().to_string();
+    let resolved = crate::vault_db::get_vault_path()
+        .to_string_lossy()
+        .to_string();
+    if cfg.vault_db_path.trim() != resolved.as_str() {
+        cfg.vault_db_path = resolved;
         changed = true;
     }
     if changed {
@@ -86,6 +93,9 @@ pub fn init_if_needed(app: &AppHandle) -> Result<CtiAppConfig, String> {
 }
 
 /// Resolve bundled `scripts/` (Resource). Uses `resource_scripts_fallback` from config when set and valid.
+///
+/// This is Tauri’s PathResolver: [`AppHandle::path`] + [`BaseDirectory::Resource`] (maps to packaged
+/// `resources/scripts` → dev `target/<profile>/resources/scripts`).
 pub fn resolve_bundled_scripts_dir(app: &AppHandle) -> Result<PathBuf, String> {
     if let Ok(cfg) = load_config(app) {
         if let Some(ref fb) = cfg.resource_scripts_fallback {
@@ -96,21 +106,36 @@ pub fn resolve_bundled_scripts_dir(app: &AppHandle) -> Result<PathBuf, String> {
         }
     }
     app.path()
-        .resolve("scripts", BaseDirectory::Resource)
+        .resolve("resources/scripts", BaseDirectory::Resource)
         .map_err(|e| format!("Resource scripts not found (dev: set resourceScriptsFallback in config or add bundle resources): {}", e))
 }
 
-pub fn resolve_feature_dir(app: &AppHandle, feature_name: &str) -> Result<PathBuf, String> {
-    let scripts = resolve_bundled_scripts_dir(app)?;
-    let p = scripts.join(feature_name);
+/// Resolves `resources/scripts/<script_name>/` inside bundled resources using Tauri’s resource path
+/// resolver ([`AppHandle::path`] + [`BaseDirectory::Resource`]; Tauri 1’s `path_resolver().resolve_resource` equivalent).
+pub fn resolve_script_path(handle: &AppHandle, script_name: &str) -> Result<PathBuf, String> {
+    let name = script_name.trim();
+    if name.is_empty() {
+        return Err("resolve_script_path: script_name is empty".into());
+    }
+    let scripts = resolve_bundled_scripts_dir(handle)?;
+    let p = scripts.join(name);
     if !p.is_dir() {
         return Err(format!(
-            "Feature {:?} not found under {} (copy All_Scripts project folders into src-tauri/resources/scripts/ for dev)",
-            feature_name,
-            scripts.display()
+            "bundled script not found: {} (no directory at resources/scripts/{}/)",
+            p.display(),
+            name
         ));
     }
     Ok(p)
+}
+
+/// Global Armory path: `Resource/scripts/<tool_name>/` via the Resource API (same as `get_tool_path` in docs).
+pub fn get_tool_resource_path(app: &AppHandle, tool_name: &str) -> Result<PathBuf, String> {
+    resolve_script_path(app, tool_name)
+}
+
+pub fn resolve_feature_dir(app: &AppHandle, feature_name: &str) -> Result<PathBuf, String> {
+    get_tool_resource_path(app, feature_name)
 }
 
 /// Venv root: `{writable}/python_env/{feature}/` (contains `bin/python` or `Scripts/python.exe`).

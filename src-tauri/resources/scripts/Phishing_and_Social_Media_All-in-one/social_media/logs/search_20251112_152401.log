@@ -1,0 +1,26 @@
+2025-11-12 15:24:01,042 - INFO - [START] Starting social media search process - Query: 'Peter'
+2025-11-12 15:24:01,043 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-12 15:24:01,043 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-12 15:24:21,478 - INFO - Added date sorting for FACEBOOK
+2025-11-12 15:24:21,478 - INFO - Added date sorting for TWITTER
+2025-11-12 15:24:21,478 - INFO - Added date sorting for INSTAGRAM
+2025-11-12 15:24:21,479 - INFO - Added date sorting for LINKEDIN
+2025-11-12 15:24:21,479 - INFO - Added date sorting for TIKTOK
+2025-11-12 15:24:21,480 - INFO - Added date sorting for PINTEREST
+2025-11-12 15:24:21,480 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-12 15:24:21,480 - INFO - [INFO] Starting step: Save parameters
+2025-11-12 15:24:21,481 - INFO - [OK] Step completed: Save parameters
+2025-11-12 15:24:21,481 - INFO - [INFO] Starting step: Execute social media search
+2025-11-12 15:28:58,340 - INFO - [OK] Step completed: Execute social media search
+2025-11-12 15:28:58,340 - INFO - [SUCCESS] Search process completed!
+2025-11-12 15:28:58,341 - INFO - [SUMMARY] Search Summary:
+2025-11-12 15:28:58,341 - INFO -    Query keyword: Peter
+2025-11-12 15:28:58,341 - INFO -    Search platforms: 6 platforms
+2025-11-12 15:28:58,341 - INFO -    Total results: 600
+2025-11-12 15:28:58,342 - INFO -    FACEBOOK: 100 results
+2025-11-12 15:28:58,342 - INFO -    TWITTER: 100 results
+2025-11-12 15:28:58,342 - INFO -    INSTAGRAM: 100 results
+2025-11-12 15:28:58,342 - INFO -    LINKEDIN: 100 results
+2025-11-12 15:28:58,342 - INFO -    TIKTOK: 100 results
+2025-11-12 15:28:58,343 - INFO -    PINTEREST: 100 results
+2025-11-12 15:28:58,345 - INFO - Log saved to: logs/search_log.json

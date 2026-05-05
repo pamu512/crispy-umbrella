@@ -1,0 +1,71 @@
+# Social_MediaV2 — Tor is part of the default stack (not host 127.0.0.1:9050).
+# - Service DNS name on the bridge network: tor_docker (matches getSearchResult.py via TOR_SOCKS_HOST).
+# - `main` depends_on tor_docker with condition: service_healthy so Tor is up before searches.
+# - `docker compose up` / `docker compose run main` start tor_docker automatically unless you pass --no-deps.
+# - ./docker-run.sh and docker-run.ps1 also `up -d tor_docker` explicitly before the main run.
+
+services:
+  # Tor proxy service (SOCKS 9050 inside the container; reachable as tor_docker:9050 from main)
+  tor_docker:
+    image: dperson/torproxy
+    container_name: docker-tor
+    # Ports are not exposed to host, only accessible within Docker network
+    # This improves security - Tor is only accessible from other containers
+    # No restart policy - will be stopped after search completes
+    restart: "no"
+    healthcheck:
+      # Check if Tor SOCKS port is listening (internal check)
+      # Using timeout and /dev/tcp for port check (works in most shells)
+      test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/localhost/9050' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 40s
+    networks:
+      - social_media_network
+
+  # Main application service
+  main:
+    build: .
+    container_name: social_media_search
+    depends_on:
+      tor_docker:
+        condition: service_healthy
+    # Use regular network instead of network_mode to avoid network namespace issues
+    # Access Tor via service name 'tor_docker' instead of localhost
+    networks:
+      - social_media_network
+    environment:
+      - TOR_SOCKS_HOST=tor_docker  # Use service name instead of 127.0.0.1
+      - TOR_SOCKS_PORT=9050
+      - TOR_CONTROL_PORT=9051
+      - TOR_DOCKER_CONTAINER=docker-tor
+      - TARGET_NAME=${TARGET_NAME:-}
+      - OUTPUT_PATH=${OUTPUT_PATH:-/app/output}
+      - NUM_PER_PLATFORM=${NUM_PER_PLATFORM:-10}
+      - START_DATE=${START_DATE:-}
+      - END_DATE=${END_DATE:-}
+      - VAULT_PATH=${VAULT_PATH:-}
+      - CTI_DB_PATH=${CTI_DB_PATH:-}
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow access to Docker socket
+    # Command will use environment variables or can be overridden
+    # Example: TARGET_NAME=Test OUTPUT_PATH=/app/output docker-compose up
+    # Or: docker-compose run --rm -e TARGET_NAME=Test -e OUTPUT_PATH=/app/output main
+    command: >
+      sh -c "
+      CMD=\"python main.py\"
+      if [ -n \"$$TARGET_NAME\" ]; then
+        CMD=\"$$CMD -v1 \\\"$$TARGET_NAME\\\" -v2 \\\"$$OUTPUT_PATH\\\" -n \\\"$$NUM_PER_PLATFORM\\\"\"
+        if [ -n \"$$START_DATE\" ]; then CMD=\"$$CMD --start-time \\\"$$START_DATE\\\"\"; fi
+        if [ -n \"$$END_DATE\" ]; then CMD=\"$$CMD --end-time \\\"$$END_DATE\\\"\"; fi
+      fi
+      eval \"$$CMD\"
+      "
+
+networks:
+  social_media_network:
+    driver: bridge
+

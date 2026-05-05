@@ -1,0 +1,36 @@
+# macOS system files
+.DS_Store
+
+# Python cache / build files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual environments
+venv/
+.env/
+.env.bak/
+
+# Local configuration
+*.env.local
+*.config
+*.ini
+*.sqlite3
+
+# Output and generated data
+Credential/
+filtered/
+csv_output/
+final_report/
+original_raw_data/
+*.csv
+*.xlsx
+
+# IDE / editor settings
+.vscode/
+.idea/
+
+# Jupyter / analysis notebooks checkpoints
+.ipynb_checkpoints/

@@ -1,0 +1,84 @@
+{
+  "retrieved_at": "2025-11-09T11:51:29.223215",
+  "session_id": "20251109_115105",
+  "parameters": {
+    "facebook": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "db2c7696979b2a96",
+      "cx": "294a079ba2d4267d5",
+      "safe": "active",
+      "cse_tok": "AEXjvhJvrd7pbKBS6iz_fovzWwY1:1762660267223",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/facebookcse.html?q=test&sort=date"
+    },
+    "twitter": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "db2c7696979b2a96",
+      "cx": "a72fbbffee86cd2d2",
+      "safe": "active",
+      "cse_tok": "AEXjvhJrpydp4sBcquDQMERyIBnr:1762660271133",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/twittercse.html?q=test&sort=date"
+    },
+    "instagram": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "6467658b9628de43",
+      "cx": "c4b97eed1414fcb14",
+      "safe": "active",
+      "cse_tok": "AEXjvhJgU7bkEJkYHrZ0Dp3L1kEU:1762660274980",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/instagramcse.html?q=test&sort=date"
+    },
+    "linkedin": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "db2c7696979b2a96",
+      "cx": "3fb7efb248d74e652",
+      "safe": "active",
+      "cse_tok": "AEXjvhJpHmRJQyT8WlMmlij1Z6Sy:1762660278442",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/linkedincse.html?q=test&sort=date"
+    },
+    "tiktok": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "db2c7696979b2a96",
+      "cx": "c0311d8946a51b053",
+      "safe": "active",
+      "cse_tok": "AEXjvhLlgNtUTwyn2eB-a-wfIqH0:1762660282331",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/tiktokcse.html?q=test&sort=date"
+    },
+    "pinterest": {
+      "rsz": "filtered_cse",
+      "num": "10",
+      "hl": "en",
+      "source": "gcsc",
+      "cselibv": "db2c7696979b2a96",
+      "cx": "cee97518dc742cf1e",
+      "safe": "active",
+      "cse_tok": "AEXjvhIm9Gy44x9jMNK6hBETBJat:1762660286556",
+      "sort": "date",
+      "exp": "cc,apo",
+      "rurl": "https://www.social-searcher.com/pinterestcse.html?q=test&sort=date"
+    }
+  }
+}

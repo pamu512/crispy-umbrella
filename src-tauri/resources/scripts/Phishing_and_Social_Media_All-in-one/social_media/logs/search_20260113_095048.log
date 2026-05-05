@@ -1,0 +1,16 @@
+2026-01-13 09:50:48,501 - INFO - [START] Starting social media search process - Query: 'Robinsons'
+2026-01-13 09:50:48,502 - INFO - [OUTPUT] Output path: '/app/output'
+2026-01-13 09:50:48,502 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2026-01-13 09:51:13,158 - INFO - Added date sorting for FACEBOOK
+2026-01-13 09:51:13,159 - INFO - Added date sorting for TWITTER
+2026-01-13 09:51:13,159 - INFO - Added date sorting for INSTAGRAM
+2026-01-13 09:51:13,159 - INFO - Added date sorting for LINKEDIN
+2026-01-13 09:51:13,160 - INFO - Added date sorting for TIKTOK
+2026-01-13 09:51:13,160 - INFO - Added date sorting for PINTEREST
+2026-01-13 09:51:13,160 - INFO - Added date sorting for YOUTUBE
+2026-01-13 09:51:13,160 - INFO - [OK] Step completed: Get all platform CSE parameters
+2026-01-13 09:51:13,160 - INFO - [INFO] Starting step: Save parameters
+2026-01-13 09:51:13,161 - INFO - [OK] Step completed: Save parameters
+2026-01-13 09:51:13,161 - INFO - [INFO] Starting step: Execute social media search
+2026-01-13 09:51:13,161 - INFO - [DEBUG] Output path received: /app/output
+2026-01-13 09:51:13,161 - INFO - [DEBUG] Output path type: <class 'str'>

@@ -1,0 +1,3 @@
+requests_tor
+beautifulsoup4
+lxml

@@ -1,0 +1,33 @@
+2025-11-12 15:44:46,079 - INFO - [START] Starting social media search process - Query: 'Ann'
+2025-11-12 15:44:46,079 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-12 15:44:46,079 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-12 15:45:06,617 - INFO - Added date sorting for FACEBOOK
+2025-11-12 15:45:06,617 - INFO - Added date sorting for TWITTER
+2025-11-12 15:45:06,618 - INFO - Added date sorting for INSTAGRAM
+2025-11-12 15:45:06,618 - INFO - Added date sorting for LINKEDIN
+2025-11-12 15:45:06,618 - INFO - Added date sorting for TIKTOK
+2025-11-12 15:45:06,618 - INFO - Added date sorting for PINTEREST
+2025-11-12 15:45:06,618 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-12 15:45:06,619 - INFO - [INFO] Starting step: Save parameters
+2025-11-12 15:45:06,619 - INFO - [OK] Step completed: Save parameters
+2025-11-12 15:45:06,619 - INFO - [INFO] Starting step: Execute social media search
+2025-11-12 15:50:06,471 - INFO - [OK] Step completed: Execute social media search
+2025-11-12 15:50:06,472 - INFO - [SUCCESS] Search process completed!
+2025-11-12 15:50:06,472 - INFO - [SUMMARY] Search Summary:
+2025-11-12 15:50:06,472 - INFO -    Query keyword: Ann
+2025-11-12 15:50:06,472 - INFO -    Search platforms: 6 platforms
+2025-11-12 15:50:06,472 - INFO -    Total results: 600
+2025-11-12 15:50:06,472 - INFO -    FACEBOOK: 100 results
+2025-11-12 15:50:06,473 - INFO -    TWITTER: 100 results
+2025-11-12 15:50:06,473 - INFO -    INSTAGRAM: 100 results
+2025-11-12 15:50:06,473 - INFO -    LINKEDIN: 100 results
+2025-11-12 15:50:06,473 - INFO -    TIKTOK: 100 results
+2025-11-12 15:50:06,473 - INFO -    PINTEREST: 100 results
+2025-11-12 15:50:06,475 - INFO - Log saved to: logs/search_log.json
+2025-11-12 15:50:06,475 - INFO - [SHUTDOWN] Stopping and removing all containers...
+2025-11-12 15:50:06,475 - INFO - [SHUTDOWN] Falling back to individual container stop/remove
+2025-11-12 15:50:06,492 - INFO - [SHUTDOWN] Stopping container: docker-tor
+2025-11-12 15:50:06,960 - INFO - [SHUTDOWN] Container docker-tor stopped
+2025-11-12 15:50:06,960 - INFO - [SHUTDOWN] Removing container: docker-tor
+2025-11-12 15:50:06,998 - INFO - [SHUTDOWN] Container docker-tor removed successfully
+2025-11-12 15:50:06,999 - INFO - [SHUTDOWN] All containers shutdown and removal process completed

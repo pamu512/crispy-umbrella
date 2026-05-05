@@ -117,6 +117,15 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Launched with `--dino-mode`: nudge accents toward purple (#A020F0) without washing the whole UI */
+html[data-dino-mode="true"] {
+  --ring: color-mix(in oklab, #a020f0 32%, var(--ring));
+  --primary: color-mix(in oklab, #a020f0 24%, var(--primary));
+  --accent: color-mix(in oklab, #a020f0 22%, var(--accent));
+  --sidebar-primary: color-mix(in oklab, #a020f0 28%, var(--sidebar-primary));
+  --sidebar-ring: color-mix(in oklab, #a020f0 26%, var(--sidebar-ring));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

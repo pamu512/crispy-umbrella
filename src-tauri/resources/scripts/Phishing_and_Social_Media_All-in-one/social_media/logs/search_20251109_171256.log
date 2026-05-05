@@ -1,0 +1,15 @@
+2025-11-09 17:12:56,968 - INFO - [START] Starting social media search process - Query: 'Test'
+2025-11-09 17:12:56,968 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-09 17:12:56,969 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-09 17:13:17,286 - INFO - Added date sorting for FACEBOOK
+2025-11-09 17:13:17,286 - INFO - Added date sorting for TWITTER
+2025-11-09 17:13:17,287 - INFO - Added date sorting for INSTAGRAM
+2025-11-09 17:13:17,287 - INFO - Added date sorting for LINKEDIN
+2025-11-09 17:13:17,287 - INFO - Added date sorting for TIKTOK
+2025-11-09 17:13:17,287 - INFO - Added date sorting for PINTEREST
+2025-11-09 17:13:17,288 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-09 17:13:17,288 - INFO - [INFO] Starting step: Save parameters
+2025-11-09 17:13:17,289 - INFO - [OK] Step completed: Save parameters
+2025-11-09 17:13:17,289 - INFO - [INFO] Starting step: Execute social media search
+2025-11-09 17:13:55,808 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=db2c7696979b2a96&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLMUOmX5g1H2ScbkWx8B1Co%3A1762708377914&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=Test&start=0&callback=google.search.cse.api0
+2025-11-09 17:14:00,429 - INFO - SocksPort=9050 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=db2c7696979b2a96&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhLMUOmX5g1H2ScbkWx8B1Co%3A1762708377914&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=Test&start=10&callback=google.search.cse.api10

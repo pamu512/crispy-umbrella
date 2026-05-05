@@ -1,0 +1,13 @@
+2025-11-12 18:34:18,621 - INFO - [START] Starting social media search process - Query: 'Threecare'
+2025-11-12 18:34:18,621 - INFO - [OUTPUT] Output path: '/app/output'
+2025-11-12 18:34:18,621 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-11-12 18:34:42,365 - INFO - Added date sorting for FACEBOOK
+2025-11-12 18:34:42,365 - INFO - Added date sorting for TWITTER
+2025-11-12 18:34:42,365 - INFO - Added date sorting for INSTAGRAM
+2025-11-12 18:34:42,366 - INFO - Added date sorting for LINKEDIN
+2025-11-12 18:34:42,367 - INFO - Added date sorting for TIKTOK
+2025-11-12 18:34:42,367 - INFO - Added date sorting for PINTEREST
+2025-11-12 18:34:42,368 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-11-12 18:34:42,368 - INFO - [INFO] Starting step: Save parameters
+2025-11-12 18:34:42,368 - INFO - [OK] Step completed: Save parameters
+2025-11-12 18:34:42,369 - INFO - [INFO] Starting step: Execute social media search

@@ -1,0 +1,34 @@
+2026-01-13 09:42:01,322 - INFO - [START] Starting social media search process - Query: 'three.io'
+2026-01-13 09:42:01,322 - INFO - [OUTPUT] Output path: '/app/output'
+2026-01-13 09:42:01,322 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2026-01-13 09:42:26,875 - INFO - Added date sorting for FACEBOOK
+2026-01-13 09:42:26,875 - INFO - Added date sorting for TWITTER
+2026-01-13 09:42:26,875 - INFO - Added date sorting for INSTAGRAM
+2026-01-13 09:42:26,876 - INFO - Added date sorting for LINKEDIN
+2026-01-13 09:42:26,877 - INFO - Added date sorting for TIKTOK
+2026-01-13 09:42:26,877 - INFO - Added date sorting for PINTEREST
+2026-01-13 09:42:26,878 - INFO - Added date sorting for YOUTUBE
+2026-01-13 09:42:26,878 - INFO - [OK] Step completed: Get all platform CSE parameters
+2026-01-13 09:42:26,878 - INFO - [INFO] Starting step: Save parameters
+2026-01-13 09:42:26,878 - INFO - [OK] Step completed: Save parameters
+2026-01-13 09:42:26,879 - INFO - [INFO] Starting step: Execute social media search
+2026-01-13 09:42:26,879 - INFO - [DEBUG] Output path received: /app/output
+2026-01-13 09:42:26,879 - INFO - [DEBUG] Output path type: <class 'str'>
+2026-01-13 09:48:52,562 - INFO - [OK] Step completed: Execute social media search
+2026-01-13 09:48:52,562 - INFO - [SUCCESS] Search process completed!
+2026-01-13 09:48:52,562 - INFO - [SUMMARY] Search Summary:
+2026-01-13 09:48:52,562 - INFO -    Query keyword: three.io
+2026-01-13 09:48:52,563 - INFO -    Search platforms: 7 platforms
+2026-01-13 09:48:52,563 - INFO -    Total results: 700
+2026-01-13 09:48:52,563 - INFO -    FACEBOOK: 100 results
+2026-01-13 09:48:52,563 - INFO -    TWITTER: 100 results
+2026-01-13 09:48:52,563 - INFO -    INSTAGRAM: 100 results
+2026-01-13 09:48:52,563 - INFO -    LINKEDIN: 100 results
+2026-01-13 09:48:52,564 - INFO -    TIKTOK: 100 results
+2026-01-13 09:48:52,564 - INFO -    PINTEREST: 100 results
+2026-01-13 09:48:52,564 - INFO -    YOUTUBE: 100 results
+2026-01-13 09:48:52,566 - INFO - Log saved to: logs/search_log.json
+2026-01-13 09:48:52,566 - INFO - [SHUTDOWN] Stopping and removing all containers...
+2026-01-13 09:48:52,566 - INFO - [SHUTDOWN] Falling back to individual container stop/remove
+2026-01-13 09:48:52,580 - INFO - [SHUTDOWN] Container docker-tor does not exist
+2026-01-13 09:48:52,580 - INFO - [SHUTDOWN] All containers shutdown and removal process completed

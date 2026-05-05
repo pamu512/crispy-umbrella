@@ -1,0 +1,84 @@
+@startuml
+' Domain Scanner Database ERD (Revised)
+' Supports one-time and subscription-based domain scans
+' Removed `logs` and `error_message` columns from `scans` (archival recommended).
+' API keys and secrets are stored in environment or external secret store (not in DB).
+
+entity "domains" {
+  * id : SERIAL <<PK>>
+  --
+  domain_name : VARCHAR(255) <<UNIQUE>> <<NOT NULL>>
+  subscription_frequency : ENUM('daily', 'weekly', 'monthly', 'none') <<DEFAULT 'none'>>
+  created_at : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+  updated_at : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP>>
+  --
+  ' INDEX: UNIQUE(domain_name)
+  ' Notes: Stores domains for both one-time (subscription_frequency='none') and scheduled runs
+}
+
+entity "scans" {
+  * id : SERIAL <<PK>>
+  --
+  domain_id : INTEGER <<FK to domains(id), NOT NULL>>
+  scan_timestamp : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP, NOT NULL>>
+  status : ENUM('pending','scanning','completed','failed','terminated','partial') <<DEFAULT 'pending'>>
+  priority : BOOLEAN <<DEFAULT false>>
+  -- NOTE: `error_message` and `logs` removed from schema; keep historical logs outside the table or in an archive table
+  created_at : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+  --
+  ' INDEX: (domain_id, scan_timestamp)
+  ' Notes: Tracks each main.py run; one_time for one-off scans
+  ' Note: logs and error_message removed; consider external logging or an archive table for long-term storage
+  ' Scalability: Partition by scan_timestamp (e.g., monthly)
+}
+
+entity "subdomain_data" {
+  * id : SERIAL <<PK>>
+  --
+  scan_id : INTEGER <<FK to scans(id), NOT NULL>>
+  host : VARCHAR(255) <<NOT NULL>>
+  ip : VARCHAR(45) <<DEFAULT 'N/A'>>
+  type : ENUM('A', 'MX') <<NOT NULL>>
+  asn : VARCHAR(50) <<DEFAULT 'N/A'>>
+  asn_name : VARCHAR(255) <<DEFAULT 'N/A'>>
+  whois : JSONB <<DEFAULT '{}'>>
+  cve : JSONB <<DEFAULT '[]'>>
+  spf : TEXT <<DEFAULT 'N/A'>>
+  dmarc : TEXT <<DEFAULT 'N/A'>>
+  dkim : TEXT <<DEFAULT 'N/A'>>
+    tls_ssl : JSONB <<DEFAULT '{}'>>
+    opened_ports : JSONB <<DEFAULT '[]'>>
+    unusual_ports : JSONB <<DEFAULT '[]'>>
+    sensitive_subdomains : JSONB <<DEFAULT '[]'>>
+  created_at : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+  --
+  ' INDEX: (scan_id, host)
+  ' INDEX: (ip)
+  ' GIN INDEX: (whois, opened_ports, tls_ssl)
+  ' Notes: Stores subdomain/MX host data per scan; JSONB for structured fields
+  ' Scalability: Partition by created_at or scan_id (e.g., monthly)
+}
+
+' Relationships
+domains ||--o{ scans : domain_id, ON DELETE CASCADE
+scans ||--o{ subdomain_data : scan_id, ON DELETE CASCADE
+
+' Notes
+note right of domains
+  Stores domains for one-time or scheduled scans.
+  subscription_frequency='none' for one-time runs.
+end note
+
+note right of scans
+  Tracks each run. Instant scans are marked `priority` and are ordered ahead of non-priority pending scans.
+  For audit/history, consider an archive table (scan_logs_archive) or external log storage rather than keeping large text blobs in the scans table.
+  Partition by scan_timestamp for scalability.
+end note
+
+note right of subdomain_data
+  Stores all subdomain/MX data.
+  JSONB for whois, opened_ports, tls_ssl for query flexibility.
+  Partition by created_at for high volume.
+end note
+
+@enduml

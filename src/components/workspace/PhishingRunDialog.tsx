@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useWorkspace } from "@/components/WorkspaceProvider"
 import { invokeRunProject, type PhishingRunParams, type PhishingScanType } from "@/lib/run-project"
+import { useBundledScriptsRoot } from "@/lib/use-bundled-scripts-root"
 
 export function PhishingRunDialog({
   open,
@@ -28,6 +29,7 @@ export function PhishingRunDialog({
   onStarted: () => void
 }) {
   const { scriptsRoot } = useWorkspace()
+  const effectiveScriptsRoot = useBundledScriptsRoot(scriptsRoot)
   const [scanType, setScanType] = React.useState<PhishingScanType>("PS")
   const [domains, setDomains] = React.useState("")
   const [keywords, setKeywords] = React.useState("")
@@ -87,12 +89,12 @@ export function PhishingRunDialog({
       await invokeRunProject(
         workspacePath,
         "Phishing_and_Social_Media_All-in-one",
-        "python",
+        "docker",
         null,
         null,
         params,
         null,
-        { scriptsRoot: scriptsRoot ?? undefined }
+        { scriptsRoot: effectiveScriptsRoot }
       )
       onStarted()
       onOpenChange(false)
@@ -107,11 +109,11 @@ export function PhishingRunDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-panel max-w-md border-white/15 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Run Brand Scout (Phishing+)</DialogTitle>
+          <DialogTitle>Native Brand Scout (Phishing+)</DialogTitle>
           <DialogDescription>
             Matches <code className="font-mono text-xs">brand_scout.py</code> / README: choose{" "}
             <strong>PS</strong> (domains), <strong>SMS</strong> (keywords), or <strong>ALL</strong>, plus
-            date range. Docker-heavy steps (e.g. domain-sift) still require Docker images on the host.
+            date range. Optional container steps on the host may still require local images if you use them.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-1">
@@ -184,7 +186,7 @@ export function PhishingRunDialog({
             Cancel
           </Button>
           <Button type="button" onClick={() => void submit()} disabled={busy}>
-            {busy ? "Starting…" : "Run"}
+            {busy ? "Starting…" : "Initialize Hunter Sync."}
           </Button>
         </DialogFooter>
       </DialogContent>

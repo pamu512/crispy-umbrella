@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core"
 
-/** IntelX Docker Compose stdin: query, start date, end date, search limit (bacongris workflow_runner). */
+/** IntelX native stdin (intelx_native_sync.py): query, start date, end date, search limit. */
 export type IntelxRunParams = {
   query: string
   startDate?: string
@@ -8,7 +8,7 @@ export type IntelxRunParams = {
   searchLimit?: string
 }
 
-/** Social_MediaV2 main.py: -v1 target -v2 output -n num [--start-time][--end-time] (see README docker-run.sh). */
+/** Social_MediaV2 main.py: -v1 target -v2 output -n num [--start-time][--end-time]. */
 export type SocialMediaRunParams = {
   target: string
   startDate?: string

@@ -1,0 +1,25 @@
+2025-10-21 14:00:19,587 - INFO - [START] Starting social media search process - Query: 'Robinsons'
+2025-10-21 14:00:19,588 - INFO - [INFO] Starting step: Get all platform CSE parameters
+2025-10-21 14:00:38,359 - INFO - Added date sorting for FACEBOOK
+2025-10-21 14:00:38,359 - INFO - Added date sorting for TWITTER
+2025-10-21 14:00:38,359 - INFO - Added date sorting for INSTAGRAM
+2025-10-21 14:00:38,359 - INFO - Added date sorting for LINKEDIN
+2025-10-21 14:00:38,359 - INFO - [OK] Step completed: Get all platform CSE parameters
+2025-10-21 14:00:38,359 - INFO - [INFO] Starting step: Save parameters
+2025-10-21 14:00:38,360 - INFO - [OK] Step completed: Save parameters
+2025-10-21 14:00:38,360 - INFO - [INFO] Starting step: Execute social media search
+2025-10-21 14:00:43,711 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=294a079ba2d4267d5&safe=active&cse_tok=AEXjvhJXiqCOGVtIb__VWTZSMcFa%3A1761026422313&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ffacebookcse.html%3Fq%3Dtest%26sort%3Ddate&q=Robinsons&start=0&callback=google.search.cse.api0
+2025-10-21 14:00:46,436 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=a72fbbffee86cd2d2&safe=active&cse_tok=AEXjvhLyzFrdG37xGZC5-0AljFsp%3A1761026426942&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Ftwittercse.html%3Fq%3Dtest%26sort%3Ddate&q=Robinsons&start=0&callback=google.search.cse.api0
+2025-10-21 14:00:50,785 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=c4b97eed1414fcb14&safe=active&cse_tok=AEXjvhIiYsBJZw86ngnuTg1whnRJ%3A1761026431731&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Finstagramcse.html%3Fq%3Dtest%26sort%3Ddate&q=Robinsons&start=0&callback=google.search.cse.api0
+2025-10-21 14:00:54,472 - INFO - SocksPort=9150 status=200 url=https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cselibv=6467658b9628de43&cx=3fb7efb248d74e652&safe=active&cse_tok=AEXjvhK8Mi6_TWtjor1taPF-snJp%3A1761026435662&sort=date&exp=cc%2Capo&rurl=https%3A%2F%2Fwww.social-searcher.com%2Flinkedincse.html%3Fq%3Dtest%26sort%3Ddate&q=Robinsons&start=0&callback=google.search.cse.api0
+2025-10-21 14:00:54,478 - INFO - [OK] Step completed: Execute social media search
+2025-10-21 14:00:54,478 - INFO - [SUCCESS] Search process completed!
+2025-10-21 14:00:54,478 - INFO - [SUMMARY] Search Summary:
+2025-10-21 14:00:54,478 - INFO -    Query keyword: Robinsons
+2025-10-21 14:00:54,478 - INFO -    Search platforms: 4 platforms
+2025-10-21 14:00:54,478 - INFO -    Total results: 40
+2025-10-21 14:00:54,478 - INFO -    FACEBOOK: 10 results
+2025-10-21 14:00:54,478 - INFO -    TWITTER: 10 results
+2025-10-21 14:00:54,478 - INFO -    INSTAGRAM: 10 results
+2025-10-21 14:00:54,478 - INFO -    LINKEDIN: 10 results
+2025-10-21 14:00:54,480 - INFO - Log saved to: logs/search_log.json

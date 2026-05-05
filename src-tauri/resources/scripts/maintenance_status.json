@@ -1,0 +1,78 @@
+{
+  "version": "1",
+  "globalLock": true,
+  "projects": {
+    "CVE_Project_NVD": {
+      "projectId": "CVE_Project_NVD",
+      "displayName": "CVE / NVD",
+      "lastSuccessfulSync": null,
+      "nextScheduledSync": "2026-05-01T01:35:08.576Z",
+      "currentStatus": "running",
+      "lastExitCode": null,
+      "lastErrorLog": null,
+      "metrics": {
+        "totalRuns": 13,
+        "failureCount": 13,
+        "averageDurationMs": 113548
+      },
+      "artifacts": {
+        "expectedOutputFile": "CVE_Project_NVD/README.md",
+        "lastVerifiedExistence": false
+      }
+    },
+    "IOCs-crawler-main": {
+      "projectId": "IOCs-crawler-main",
+      "displayName": "IOCs Crawler",
+      "lastSuccessfulSync": "2026-05-01T00:27:16.118Z",
+      "nextScheduledSync": "2026-05-01T01:27:16.119Z",
+      "currentStatus": "idle",
+      "lastExitCode": 0,
+      "lastErrorLog": null,
+      "metrics": {
+        "totalRuns": 10,
+        "failureCount": 5,
+        "averageDurationMs": 282794
+      },
+      "artifacts": {
+        "expectedOutputFile": "IOCs-crawler-main",
+        "lastVerifiedExistence": true
+      }
+    },
+    "ASM-fetch-main": {
+      "projectId": "ASM-fetch-main",
+      "displayName": "ASM Fetch",
+      "lastSuccessfulSync": "2026-04-30T04:25:30.887Z",
+      "nextScheduledSync": "2026-05-07T04:25:30.887Z",
+      "currentStatus": "idle",
+      "lastExitCode": 0,
+      "lastErrorLog": null,
+      "metrics": {
+        "totalRuns": 6,
+        "failureCount": 0,
+        "averageDurationMs": 2438
+      },
+      "artifacts": {
+        "expectedOutputFile": "ASM-fetch-main/README.md",
+        "lastVerifiedExistence": true
+      }
+    },
+    "Intelx_Crawler": {
+      "projectId": "Intelx_Crawler",
+      "displayName": "IntelX",
+      "lastSuccessfulSync": null,
+      "nextScheduledSync": "2026-05-01T03:15:22.993Z",
+      "currentStatus": "running",
+      "lastExitCode": null,
+      "lastErrorLog": null,
+      "metrics": {
+        "totalRuns": 2,
+        "failureCount": 2,
+        "averageDurationMs": 319827
+      },
+      "artifacts": {
+        "expectedOutputFile": "Intelx_Crawler/csv_output",
+        "lastVerifiedExistence": false
+      }
+    }
+  }
+}
