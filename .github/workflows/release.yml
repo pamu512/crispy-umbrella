@@ -37,6 +37,12 @@ jobs:
             tauri_build_args: "--target x86_64-unknown-linux-gnu"
 
     steps:
+      # Required so checkout can materialize deep paths under bundled scripts (e.g. Phishing … screenshots).
+      - name: Enable Git long paths (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
+
       - name: Checkout
         uses: actions/checkout@v4
 

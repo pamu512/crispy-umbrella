@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - name: Enable Git long paths (Windows)
+        shell: pwsh
+        run: git config --global core.longpaths true
+
       - uses: actions/checkout@v4
 
       - name: Set up Python
