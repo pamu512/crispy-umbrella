@@ -26,6 +26,11 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       # Install a current toolchain (images may still default to an old cargo on PATH).
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -46,11 +51,31 @@ jobs:
         with:
           workspaces: src-tauri
 
+      # `bundle.externalBin` entries must exist before `cargo build` / tauri-build (see `npm run build:python`).
+      - name: Install PyInstaller and ingestion requirements (sidecar freeze)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip wheel setuptools
+          pip install pyinstaller
+          pip install \
+            -r src-tauri/resources/scripts/Compromised_user_Mac/requirements.txt \
+            -r src-tauri/resources/scripts/Ransomware_live_event_victim/requirements.txt \
+            -r src-tauri/resources/scripts/CVE_Project_NVD/requirements.txt \
+            -r src-tauri/resources/scripts/IOCs-crawler-main/requirements.txt \
+            -r src-tauri/resources/scripts/Intelx_Crawler/requirements.txt
+
+      - name: Freeze Python ingestion tools (host triple → src-tauri/binaries/)
+        run: npm run build:python
+
       - name: Verify Tauri bundle inputs
         run: |
+          set -euo pipefail
           test -f src-tauri/tauri.conf.json
           test -f src-tauri/Cargo.toml
           test -f src-tauri/icons/icon.icns
+          ls -la src-tauri/binaries/
+          test "$(find src-tauri/binaries -maxdepth 1 -type f -name 'intelx-scraper-*-apple-darwin' | wc -l | tr -d ' ')" != "0"
 
       - name: Build Tauri (generates .dmg)
         shell: bash

@@ -103,6 +103,7 @@ jobs:
             -r src-tauri/resources/scripts/Compromised_user_Mac/requirements.txt \
             -r src-tauri/resources/scripts/Ransomware_live_event_victim/requirements.txt \
             -r src-tauri/resources/scripts/CVE_Project_NVD/requirements.txt \
+            -r src-tauri/resources/scripts/IOCs-crawler-main/requirements.txt \
             -r src-tauri/resources/scripts/Intelx_Crawler/requirements.txt
 
       - name: Freeze Python ingestion tools (host triple → src-tauri/binaries/)
