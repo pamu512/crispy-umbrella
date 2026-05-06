@@ -108,6 +108,17 @@ struct RunCli {
     dino_mode: bool,
 }
 
+/// Set **`CTI_DINO_MODE=1`** (or `true`) when `tauri dev` cannot forward **`--dino-mode`** to the app binary.
+fn env_cti_dino_mode() -> bool {
+    match std::env::var("CTI_DINO_MODE") {
+        Ok(v) => {
+            let t = v.trim();
+            t == "1" || t.eq_ignore_ascii_case("true") || t.eq_ignore_ascii_case("yes")
+        }
+        Err(_) => false,
+    }
+}
+
 fn main() {
     // Seed CTI_DB_PATH + CTI_COMMAND_CENTER_HOME (app-support `cti-app/`); GUI `setup` refines via app_data_dir().
     // Python `run_project` still sets per-project `CTI_WORKSPACE_PATH` on child processes.
@@ -162,6 +173,6 @@ fn main() {
     // via Tauri 2 `AppHandle::path().resolve(..., BaseDirectory::Resource)`. The GUI binary has no
     // `AppHandle` here — only delegate from IPC handlers that receive `AppHandle`.
     app_lib::run_with_options(app_lib::RunOptions {
-        dino_mode: run.dino_mode,
+        dino_mode: run.dino_mode || env_cti_dino_mode(),
     });
 }
