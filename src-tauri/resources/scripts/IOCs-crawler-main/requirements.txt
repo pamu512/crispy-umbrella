@@ -1,20 +1,21 @@
 # IOC/news crawlers → SQLite (ioc_news). No Redis, Celery, or RethinkDB.
-beautifulsoup4==4.13.3
-certifi==2025.1.31
-charset-normalizer==3.4.1
+# Versions aligned with Intelx_Crawler where shared, so CI can `pip install -r …` multiple trees in one venv.
+beautifulsoup4>=4.13.3,<5
+certifi==2025.6.15
+charset-normalizer==3.4.2
 cloudscraper==1.2.71
 idna==3.10
-lxml==5.3.1
+lxml>=5.3.1,<7
 parse==1.20.2
 pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-pytz==2025.1
+pytz==2025.2
 requests==2.32.3
 requests-toolbelt==1.0.0
 sgmllib3k==1.0.0
 six==1.17.0
-soupsieve==2.6
+soupsieve>=2.6,<3
 stealth_requests==2.0.4
 typing_extensions==4.12.2
-urllib3==2.3.0
+urllib3==2.4.0
