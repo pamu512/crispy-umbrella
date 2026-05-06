@@ -71,6 +71,13 @@ impl fmt::Display for VectorDbError {
 
 impl std::error::Error for VectorDbError {}
 
+fn apply_vector_store_pragmas(conn: &Connection) -> Result<(), rusqlite::Error> {
+    conn.busy_timeout(Duration::from_millis(30_000))?;
+    conn.pragma_update(None, "journal_mode", "WAL")?;
+    conn.pragma_update(None, "synchronous", "NORMAL")?;
+    Ok(())
+}
+
 /// Initialize the local vector DB path (call once from app `setup` or headless CLI).
 pub fn init_local_vector_store(path: PathBuf) -> Result<(), String> {
     if VECTOR_STORE_PATH.get().is_some() {
@@ -80,6 +87,7 @@ pub fn init_local_vector_store(path: PathBuf) -> Result<(), String> {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     let conn = Connection::open(&path).map_err(|e| e.to_string())?;
+    apply_vector_store_pragmas(&conn).map_err(|e| e.to_string())?;
     ensure_schema(&conn).map_err(|e| e.to_string())?;
     VECTOR_STORE_PATH
         .set(path)
@@ -98,7 +106,9 @@ fn store_path() -> Result<&'static Path, VectorDbError> {
 
 fn open_store() -> Result<Connection, VectorDbError> {
     let p = store_path()?;
-    Connection::open(p).map_err(|e| VectorDbError::Store(e.to_string()))
+    let conn = Connection::open(p).map_err(|e| VectorDbError::Store(e.to_string()))?;
+    apply_vector_store_pragmas(&conn).map_err(|e| VectorDbError::Store(e.to_string()))?;
+    Ok(conn)
 }
 
 fn ensure_schema(conn: &Connection) -> Result<(), rusqlite::Error> {
@@ -365,6 +375,78 @@ pub struct SemanticThreatHit {
     pub metadata: Option<String>,
 }
 
+fn like_contains_pattern(raw: &str) -> String {
+    let esc = raw
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_");
+    format!("%{esc}%")
+}
+
+fn is_missing_embedding_model_error(err: &VectorDbError) -> bool {
+    match err {
+        VectorDbError::Ollama(s) => {
+            let lower = s.to_lowercase();
+            (lower.contains("404") || lower.contains("not found"))
+                && (lower.contains("model") || lower.contains("pull"))
+        }
+        _ => false,
+    }
+}
+
+/// When Ollama has no embedding model installed, approximate semantic search with IOC substring matches.
+fn run_keyword_threat_search(_app: &AppHandle, query: &str) -> Result<Vec<SemanticThreatHit>, VectorDbError> {
+    let q = query.trim();
+    if q.is_empty() {
+        return Ok(Vec::new());
+    }
+    let pat = like_contains_pattern(q);
+    let db_path = vault_db::get_vault_path();
+    let conn = vault_db::open_vault(&db_path).map_err(VectorDbError::Vault)?;
+
+    let sql =
+        "SELECT rowid, ioc_value, ioc_type, first_seen, last_seen, source_project, metadata \
+         FROM ioc_records \
+         WHERE ioc_value LIKE ?1 ESCAPE '\\' OR ioc_type LIKE ?2 ESCAPE '\\' OR IFNULL(metadata, '') LIKE ?3 ESCAPE '\\' \
+         ORDER BY datetime(COALESCE(NULLIF(last_seen, ''), NULLIF(first_seen, ''), '1970-01-01')) DESC \
+         LIMIT ?4";
+
+    let mut stmt = match conn.prepare(sql) {
+        Ok(s) => s,
+        Err(e) if e.to_string().to_lowercase().contains("no such table") => return Ok(Vec::new()),
+        Err(e) => return Err(VectorDbError::Vault(e.to_string())),
+    };
+
+    let lim = SEMANTIC_SEARCH_TOP_K as i64;
+    let mut rows = stmt
+        .query_map(
+            rusqlite::params![pat.clone(), pat.clone(), pat, lim],
+            |row| {
+                Ok(SemanticThreatHit {
+                    score: 0.0,
+                    sqlite_rowid: row.get(0)?,
+                    ioc_value: row.get(1)?,
+                    ioc_type: row.get(2)?,
+                    first_seen: row.get(3)?,
+                    last_seen: row.get(4)?,
+                    source_project: row.get(5)?,
+                    metadata: row.get(6)?,
+                })
+            },
+        )
+        .map_err(|e| VectorDbError::Vault(e.to_string()))?;
+
+    let mut out: Vec<SemanticThreatHit> = Vec::new();
+    let mut rank = 0u32;
+    while let Some(r) = rows.next() {
+        let mut hit = r.map_err(|e| VectorDbError::Vault(e.to_string()))?;
+        hit.score = 1.0_f32 - (rank as f32 * 0.02_f32).min(0.2_f32);
+        rank += 1;
+        out.push(hit);
+    }
+    Ok(out)
+}
+
 fn fetch_hit_from_vault(
     _app: &AppHandle,
     score: f32,
@@ -435,7 +517,17 @@ async fn run_semantic_threat_search(app: &AppHandle, query: &str) -> Result<Vec<
         query.to_string()
     };
 
-    let vector = ollama_embed_text(&embed_input).await?;
+    let vector = match ollama_embed_text(&embed_input).await {
+        Ok(v) => v,
+        Err(e) if is_missing_embedding_model_error(&e) => {
+            log::warn!(
+                "semantic_threat_search: embedding model unavailable ({}); using IOC keyword fallback (install with e.g. `ollama pull nomic-embed-text` for full semantic search)",
+                e
+            );
+            return run_keyword_threat_search(app, query);
+        }
+        Err(e) => return Err(e),
+    };
     if vector.len() != NOMIC_EMBED_TEXT_DIM as usize {
         return Err(VectorDbError::Embed(format!(
             "expected {} dims from Ollama, got {}",

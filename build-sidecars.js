@@ -69,6 +69,43 @@ function getRustTargetTriple() {
   throw new Error(`Unsupported platform: ${platform}`);
 }
 
+/**
+ * Same triple Cargo uses for the default host target (matches `rustc --print host-tuple`).
+ * Prefer over `process.arch` when Node is x64-under-Rosetta but Rust builds aarch64, etc.
+ */
+function getEffectiveRustTriple() {
+  const fromEnv =
+    process.env.TAURI_ENV_TARGET_TRIPLE?.trim() ||
+    process.env.CARGO_BUILD_TARGET?.trim();
+  if (fromEnv) return fromEnv;
+
+  try {
+    const tuple = execSync("rustc --print host-tuple", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+      .trim()
+      .split(/\r?\n/)[0]
+      ?.trim();
+    if (tuple) return tuple;
+  } catch {
+    /* fall through */
+  }
+
+  try {
+    const out = execSync("rustc -vV", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    const m = out.match(/host:\s*(\S+)/);
+    if (m) return m[1].trim();
+  } catch {
+    /* fall through */
+  }
+
+  return getRustTargetTriple();
+}
+
 function windowsExeSuffix() {
   return process.platform === "win32" ? ".exe" : "";
 }
@@ -132,7 +169,7 @@ function main() {
   const pythonCmd = getPythonExecutable();
   ensurePyInstaller(pythonCmd);
 
-  const triple = getRustTargetTriple();
+  const triple = getEffectiveRustTriple();
   const exeSuffix = windowsExeSuffix();
   fs.mkdirSync(BINARIES_DIR, { recursive: true });
 
@@ -176,6 +213,10 @@ function main() {
     ];
     if (sidecar.sidecarBase === "ioc-news-crawler") {
       pyArgs.push("--collect-submodules", "news");
+      pyArgs.push("--collect-data", "stealth_requests");
+      const sep = process.platform === "win32" ? ";" : ":";
+      const newsCommon = path.join(scriptDir, "news", "common");
+      pyArgs.push("--add-data", `${newsCommon}${sep}news/common`);
     }
     if (sidecar.sidecarBase === "intelx-scraper") {
       const sharedUtils = path.join(

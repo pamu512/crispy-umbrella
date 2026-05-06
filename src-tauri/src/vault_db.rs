@@ -296,8 +296,11 @@ pub fn open_vault(db_path: &Path) -> Result<Connection, String> {
 }
 
 /// WAL, busy timeout, FK — [`rusqlite::Error`] for r2d2 pool connections.
+///
+/// Busy timeout is relatively high so concurrent writers (e.g. IOC crawl sidecar, embed jobs)
+/// do not surface `database is locked` to the UI while WAL readers wait.
 pub fn apply_pool_connection_pragmas(conn: &Connection) -> rusqlite::Result<()> {
-    conn.busy_timeout(Duration::from_millis(5000))?;
+    conn.busy_timeout(Duration::from_millis(30_000))?;
     conn.pragma_update(None, "foreign_keys", "ON")?;
     conn.pragma_update(None, "journal_mode", "WAL")?;
     conn.pragma_update(None, "synchronous", "NORMAL")?;
