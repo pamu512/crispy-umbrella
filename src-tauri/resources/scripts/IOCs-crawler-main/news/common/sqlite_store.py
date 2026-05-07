@@ -8,15 +8,29 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+for _root in Path(__file__).resolve().parents:
+    if (_root / "exceptions.py").is_file():
+        if str(_root) not in sys.path:
+            sys.path.insert(0, str(_root))
+        break
+else:
+    raise ImportError("Could not locate repo root (exceptions.py).")
+
+from exceptions import ValidationError
 
 
 def _db_path() -> Path:
     raw = (os.environ.get("CTI_DB_PATH") or os.environ.get("VAULT_PATH") or "").strip()
     if not raw:
-        raise RuntimeError("CTI_DB_PATH (or VAULT_PATH) must be set to the vault SQLite file.")
+        raise ValidationError(
+            {"component": "sqlite_store", "missing_env": ["CTI_DB_PATH", "VAULT_PATH"]},
+            message="CTI_DB_PATH (or VAULT_PATH) must be set to the vault SQLite file.",
+        )
     return Path(raw).expanduser().resolve()
 
 

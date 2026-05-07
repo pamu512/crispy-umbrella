@@ -23,6 +23,7 @@ mod graph_pivot;
 mod vector_db;
 mod cpe_matcher;
 mod dashboard;
+mod debug_status;
 mod logging;
 mod workers;
 mod vault_pool;
@@ -2216,6 +2217,7 @@ pub fn run_with_options(opts: RunOptions) {
             validate_workspace,
             validate_features_bundle,
             get_dashboard_metrics,
+            debug_status::get_internal_debug_status,
             get_vault_stats,
             get_recent_cves_for_pulse,
             get_recent_iocs_for_pulse,

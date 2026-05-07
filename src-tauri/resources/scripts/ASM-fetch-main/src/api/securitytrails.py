@@ -7,6 +7,7 @@ import time
 from typing import Set
 
 import requests
+from circuit_breaker import circuit_protect
 from src.utils.validators import is_valid_domain
 
 
@@ -34,7 +35,10 @@ def get_securitytrails_subdomains(domain: str, api_keys: list[str], verbose: boo
         url = f"https://api.securitytrails.com/v1/domain/{domain}/subdomains"
         headers = {"APIKEY": api_key}
         try:
-            response = requests.get(url, headers=headers, timeout=15)
+            response = circuit_protect(
+                "asm_securitytrails",
+                lambda: requests.get(url, headers=headers, timeout=15),
+            )
             if response.status_code == 429:
                 logger.warning(f"SecurityTrails API key {key_idx+1} hit rate limit, rotating...")
                 time.sleep(2)

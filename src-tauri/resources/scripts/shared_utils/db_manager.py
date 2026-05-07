@@ -15,18 +15,56 @@ Override the bundle id with ``CTI_APP_IDENTIFIER`` (default matches ``tauri.conf
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import sqlite3
 import sys
 from datetime import datetime, timezone
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Mapping
+from typing import TypeAlias
+
+from logger import audit_state_change
+
+from constants import (
+    CTI_APP_DIRECTORY_NAME,
+    DEFAULT_CTI_APP_IDENTIFIER,
+    ENV_CTI_APP_DATA_ROOT,
+    ENV_CTI_APP_IDENTIFIER,
+    ENV_CTI_DB_PATH,
+    ENV_CTI_WRITABLE_ROOT,
+    VAULT_SQLITE_FILENAME,
+)
+
+for _ex_root in Path(__file__).resolve().parents:
+    if (_ex_root / "exceptions.py").is_file():
+        if str(_ex_root) not in sys.path:
+            sys.path.insert(0, str(_ex_root))
+        from exceptions import JsonValue, ValidationError as VaultValidationError
+
+        break
+else:  # pragma: no cover
+    raise ImportError("exceptions.py not found; cannot load VaultValidationError")
+
+SqlScalar: TypeAlias = str | int | float | bytes | None
 
 
 def _utc_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+
+_LOG = logging.getLogger(__name__)
+
+
+def _commit_batch_transaction(conn: sqlite3.Connection) -> None:
+    """
+    Commit for multi-row batch transactions.
+
+    Broken out so integration tests can simulate commit-time failure without patching
+    ``sqlite3.Connection.commit`` (non-patchable on Python 3.14+).
+    """
+    conn.commit()
 
 def parse_cvss_base_score(s: str) -> float | None:
     """Extract a leading decimal from CVSS-like strings (mirrors Rust ``vault_db::parse_cvss_base_score``)."""
@@ -55,6 +93,22 @@ def _tauri_app_data_dir(identifier: str) -> Path:
     return Path.home() / ".local" / "share" / identifier
 
 
+def _resolve_vault_from_explicit(explicit: Path | str) -> Path:
+    p = Path(explicit).expanduser().resolve()
+    if p.is_dir():
+        return (p / VAULT_SQLITE_FILENAME).resolve()
+    return p.resolve()
+
+
+def _resolve_vault_from_writable_root(root: str) -> Path:
+    r = Path(root).expanduser().resolve()
+    if r.suffix.lower() == ".db":
+        return r.resolve()
+    if r.name == CTI_APP_DIRECTORY_NAME:
+        return (r / VAULT_SQLITE_FILENAME).resolve()
+    return (r / CTI_APP_DIRECTORY_NAME / VAULT_SQLITE_FILENAME).resolve()
+
+
 def resolve_vault_db_path(explicit: Path | str | None = None) -> Path:
     """
     Resolve ``cti_vault.db`` to the user's application data area, not the current working tree.
@@ -62,26 +116,52 @@ def resolve_vault_db_path(explicit: Path | str | None = None) -> Path:
     ``explicit`` wins when provided. Otherwise env vars, then Tauri-style AppData.
     """
     if explicit is not None:
-        p = Path(explicit).expanduser().resolve()
-        if p.is_dir():
-            return (p / "cti_vault.db").resolve()
-        return p.resolve()
+        return _resolve_vault_from_explicit(explicit)
 
-    raw = (os.environ.get("CTI_DB_PATH") or "").strip()
+    raw = (os.environ.get(ENV_CTI_DB_PATH) or "").strip()
     if raw:
         return Path(raw).expanduser().resolve()
 
-    root = (os.environ.get("CTI_WRITABLE_ROOT") or os.environ.get("CTI_APP_DATA_ROOT") or "").strip()
+    root = (os.environ.get(ENV_CTI_WRITABLE_ROOT) or os.environ.get(ENV_CTI_APP_DATA_ROOT) or "").strip()
     if root:
-        r = Path(root).expanduser().resolve()
-        if r.suffix.lower() == ".db":
-            return r.resolve()
-        if r.name == "cti-app":
-            return (r / "cti_vault.db").resolve()
-        return (r / "cti-app" / "cti_vault.db").resolve()
+        return _resolve_vault_from_writable_root(root)
 
-    ident = (os.environ.get("CTI_APP_IDENTIFIER") or "com.pamu512.crispyumbrella").strip()
-    return (_tauri_app_data_dir(ident) / "cti-app" / "cti_vault.db").resolve()
+    ident = (os.environ.get(ENV_CTI_APP_IDENTIFIER) or DEFAULT_CTI_APP_IDENTIFIER).strip()
+    return (_tauri_app_data_dir(ident) / CTI_APP_DIRECTORY_NAME / VAULT_SQLITE_FILENAME).resolve()
+
+
+def _sanitize_ioc_batch_rows(
+    rows: Sequence[tuple[str, str, str, str, str | None, str | None]],
+    now: str,
+) -> list[tuple[str, str, str, str, str | None, str | None]]:
+    cleaned: list[tuple[str, str, str, str, str | None, str | None]] = []
+    for tup in rows:
+        v, t, fs, ls, sp, meta = tup
+        v2 = (v or "").strip()
+        t2 = (t or "").strip()
+        if not v2 or not t2:
+            continue
+        fs2 = (fs or "").strip() or now
+        ls2 = (ls or "").strip() or now
+        cleaned.append((v2, t2, fs2, ls2, sp, meta))
+    return cleaned
+
+
+def _sanitize_asm_batch_rows(
+    rows: Sequence[tuple[str, str, str, str, str | None]],
+    now: str,
+) -> list[tuple[str, str, str, str, str | None]]:
+    cleaned: list[tuple[str, str, str, str, str | None]] = []
+    for tup in rows:
+        at, typ, ls, st, meta = tup
+        a2 = (at or "").strip()
+        if not a2:
+            continue
+        typ2 = (typ or "").strip() or "unknown"
+        ls2 = (ls or "").strip() or now
+        st2 = (st or "").strip() or "active"
+        cleaned.append((a2, typ2, ls2, st2, meta))
+    return cleaned
 
 
 _SELECT_ONLY = re.compile(r"^\s*select\s", re.IGNORECASE | re.DOTALL)
@@ -138,10 +218,24 @@ class CTIVault:
             self._conn.execute("PRAGMA foreign_keys=ON;")
             self._conn.execute("PRAGMA journal_mode=WAL;")
             self._conn.execute("PRAGMA synchronous=NORMAL;")
+            audit_state_change(
+                _LOG,
+                component="db_manager.CTIVault",
+                previous_state="closed",
+                new_state="open",
+                detail=str(self.db_path),
+            )
         return self._conn
 
     def close(self) -> None:
         if self._conn is not None:
+            audit_state_change(
+                _LOG,
+                component="db_manager.CTIVault",
+                previous_state="open",
+                new_state="closed",
+                detail=str(self.db_path),
+            )
             self._conn.close()
             self._conn = None
 
@@ -159,7 +253,7 @@ class CTIVault:
         severity_score: float | None = None,
         published_date: str | None = None,
         updated_at: str | None = None,
-        metadata: Mapping[str, Any] | str | None = None,
+        metadata: Mapping[str, JsonValue] | str | None = None,
     ) -> None:
         """Insert or replace one CVE row (canonical ``cve_data`` schema)."""
         cid = cve_id.strip()
@@ -201,7 +295,7 @@ class CTIVault:
         asset_type: str | None = None,
         last_scan_at: str | None = None,
         status: str | None = None,
-        metadata: Mapping[str, Any] | str | None = None,
+        metadata: Mapping[str, JsonValue] | str | None = None,
     ) -> None:
         """Insert or update one ASM row."""
         at = asset_target.strip()
@@ -240,7 +334,7 @@ class CTIVault:
         first_seen: str | None = None,
         last_seen: str | None = None,
         source_project: str | None = None,
-        metadata: Mapping[str, Any] | str | None = None,
+        metadata: Mapping[str, JsonValue] | str | None = None,
     ) -> None:
         """
         Insert or update one IOC row.
@@ -284,7 +378,7 @@ class CTIVault:
 
     def batch_upsert_iocs(
         self,
-        rows: list[tuple[str, str, str, str, str | None, str | None]],
+        rows: Sequence[tuple[str, str, str, str, str | None, str | None]],
     ) -> None:
         """
         Insert or update many IOC rows in one transaction (``executemany``).
@@ -294,16 +388,7 @@ class CTIVault:
         if not rows:
             return
         now = _utc_iso()
-        cleaned: list[tuple[str, str, str, str, str | None, str | None]] = []
-        for tup in rows:
-            v, t, fs, ls, sp, meta = tup
-            v2 = (v or "").strip()
-            t2 = (t or "").strip()
-            if not v2 or not t2:
-                continue
-            fs2 = ((fs or "").strip() or now)
-            ls2 = ((ls or "").strip() or now)
-            cleaned.append((v2, t2, fs2, ls2, sp, meta))
+        cleaned = _sanitize_ioc_batch_rows(rows, now)
         if not cleaned:
             return
         sql = """
@@ -322,14 +407,14 @@ class CTIVault:
         c.execute("BEGIN IMMEDIATE")
         try:
             c.executemany(sql, cleaned)
-            c.commit()
+            _commit_batch_transaction(c)
         except Exception:
             c.rollback()
             raise
 
     def batch_upsert_cves(
         self,
-        rows: list[tuple[str, float | None, str, str, str | None]],
+        rows: Sequence[tuple[str, float | None, str, str, str | None]],
     ) -> None:
         """
         Each tuple: ``(cve_id, severity_score, published_date, updated_at, metadata_json)``.
@@ -365,14 +450,14 @@ class CTIVault:
         c.execute("BEGIN IMMEDIATE")
         try:
             c.executemany(sql, cleaned)
-            c.commit()
+            _commit_batch_transaction(c)
         except Exception:
             c.rollback()
             raise
 
     def batch_upsert_asm_assets(
         self,
-        rows: list[tuple[str, str, str, str, str | None]],
+        rows: Sequence[tuple[str, str, str, str, str | None]],
     ) -> None:
         """
         Each tuple: ``(asset_target, asset_type, last_scan_at, status, metadata_json)``.
@@ -380,16 +465,7 @@ class CTIVault:
         if not rows:
             return
         now = _utc_iso()
-        cleaned: list[tuple[str, str, str, str, str | None]] = []
-        for tup in rows:
-            at, typ, ls, st, meta = tup
-            a2 = (at or "").strip()
-            if not a2:
-                continue
-            typ2 = ((typ or "").strip() or "unknown")
-            ls2 = ((ls or "").strip() or now)
-            st2 = ((st or "").strip() or "active")
-            cleaned.append((a2, typ2, ls2, st2, meta))
+        cleaned = _sanitize_asm_batch_rows(rows, now)
         if not cleaned:
             return
         sql = """
@@ -405,25 +481,51 @@ class CTIVault:
         c.execute("BEGIN IMMEDIATE")
         try:
             c.executemany(sql, cleaned)
-            c.commit()
+            _commit_batch_transaction(c)
         except Exception:
             c.rollback()
             raise
 
-    def query_vault(self, query_string: str) -> list[dict[str, Any]]:
+    def query_vault(self, query_string: str) -> list[dict[str, SqlScalar]]:
         """Run a single read-only ``SELECT``; returns list of row dicts."""
-        _assert_select_only(query_string)
+        if not isinstance(query_string, str):
+            raise VaultValidationError(
+                {"field": "query_string", "reason": "type", "got": type(query_string).__name__},
+                message="query_string must be str",
+            )
+        if query_string != query_string.strip():
+            raise VaultValidationError(
+                {"field": "query_string", "reason": "surrounding_whitespace"},
+                message="query_string must not have leading or trailing whitespace",
+            )
+        try:
+            _assert_select_only(query_string)
+        except ValueError as e:
+            raise VaultValidationError(
+                {"field": "query_string", "reason": "invalid_select", "detail": str(e)},
+                message=str(e),
+            ) from e
         cur = self.connection.execute(query_string)
         rows = cur.fetchall()
         return [dict(r) for r in rows]
 
-    def get_recent_intelligence(self, limit: int = 50) -> list[dict[str, Any]]:
+    def get_recent_intelligence(self, limit: int = 50) -> list[dict[str, SqlScalar]]:
         """
         Newest activity across ``cve_data``, ``ioc_records``, and ``asm_assets`` for Threat Pulse-style UIs.
 
         Each row: ``feed_type``, ``headline``, ``sort_ts``, ``payload`` (metadata JSON string or null).
         """
-        lim = max(1, min(int(limit), 500))
+        if isinstance(limit, bool) or not isinstance(limit, int):
+            raise VaultValidationError(
+                {"field": "limit", "reason": "type", "got": type(limit).__name__},
+                message="limit must be an int",
+            )
+        if limit < 1 or limit > 500:
+            raise VaultValidationError(
+                {"field": "limit", "value": limit, "allowed_range": "[1, 500]"},
+                message="limit must be between 1 and 500 inclusive",
+            )
+        lim = limit
         sql = f"""
         SELECT * FROM (
             SELECT
@@ -479,8 +581,7 @@ class CTIVault:
         self.connection.commit()
 
 
-def open_cti_vault() -> sqlite3.Connection:
-    """Open resolved path with the same PRAGMAs as ``CTIVault.connection`` (no DDL)."""
-    v = CTIVault()
-    _ = v.connection
-    return v.connection
+def open_cti_vault(vault: CTIVault) -> sqlite3.Connection:
+    """Return the underlying SQLite connection using the same PRAGMAs as ``CTIVault.connection`` (no DDL)."""
+    _ = vault.connection
+    return vault.connection

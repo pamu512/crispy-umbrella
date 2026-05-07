@@ -1,7 +1,7 @@
 import re
 
 with open('news/common/rule.txt',encoding='utf-8') as r:
-    lines = [ l.strip() for l in r.readlines()]
+    lines = [line.strip() for line in r]
 PATTERN = '|'.join(lines)
 
 

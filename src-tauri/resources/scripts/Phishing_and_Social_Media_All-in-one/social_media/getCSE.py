@@ -4,7 +4,17 @@
 import re
 import sys
 import os
+from pathlib import Path
 from urllib.parse import urlparse, parse_qsl, unquote
+
+for _root in Path(__file__).resolve().parents:
+    if (_root / "shared_utils" / "retry_backoff.py").is_file():
+        sys.path.insert(0, str(_root / "shared_utils"))
+        break
+else:
+    raise ImportError("shared_utils/retry_backoff.py not found")
+
+from retry_backoff import with_exponential_backoff
 from playwright.sync_api import sync_playwright
 import socket
 
@@ -78,8 +88,16 @@ def capture_cse_requests(page_url: str, timeout_ms: int = 20000, headless: bool 
         page.goto(page_url, wait_until="domcontentloaded", timeout=timeout_ms)
         # This step is crucial if site behavior is slow
         try:
-            page.wait_for_load_state("networkidle", timeout=timeout_ms)
-        except:
+            def _wait_network_idle() -> None:
+                page.wait_for_load_state("networkidle", timeout=timeout_ms)
+
+            with_exponential_backoff(
+                _wait_network_idle,
+                max_retries=3,
+                base_delay_s=1.0,
+                retry_on=(Exception,),
+            )
+        except Exception:
             pass
 
         # If page needs interaction to trigger, add some actions here (as needed):

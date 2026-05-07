@@ -9,6 +9,7 @@
     "tauri:build": "npm run build:python && tauri build",
     "start": "next start",
     "lint": "eslint",
+    "mypy": "bash scripts/mypy_check.sh",
     "tauri": "tauri"
   },
   "dependencies": {

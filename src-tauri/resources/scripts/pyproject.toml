@@ -13,3 +13,9 @@ dependencies = []
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["shared_utils*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: exercises real SQLite/filesystem behavior",
+    "network: mocked HTTP/time for timeout behavior",
+]

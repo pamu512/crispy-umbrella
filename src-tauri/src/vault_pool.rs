@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 
 use r2d2::Pool;
 use rusqlite::Connection;
+use serde::Serialize;
 use tauri::AppHandle;
 use tauri_plugin_shell::ShellExt;
 
@@ -51,6 +52,15 @@ impl r2d2::ManageConnection for SqliteConnectionManager {
 #[derive(Clone)]
 pub struct VaultPool(Pool<SqliteConnectionManager>);
 
+/// [`r2d2`] pool sizing for debug / `/status` dashboards (live connections in host process).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultPoolDebugSnapshot {
+    pub max_connections: u32,
+    pub connections: u32,
+    pub idle_connections: u32,
+}
+
 impl VaultPool {
     fn build(path: &Path) -> Result<Self, String> {
         let manager = SqliteConnectionManager::new(path.to_path_buf());
@@ -82,6 +92,16 @@ impl VaultPool {
             }
             Ok(())
         })
+    }
+
+    /// Current pool sizing from [`r2d2`] (not SQLite server stats — single-file vault).
+    pub fn debug_snapshot(&self) -> VaultPoolDebugSnapshot {
+        let st = self.0.state();
+        VaultPoolDebugSnapshot {
+            max_connections: self.0.max_size(),
+            connections: st.connections,
+            idle_connections: st.idle_connections,
+        }
     }
 }
 

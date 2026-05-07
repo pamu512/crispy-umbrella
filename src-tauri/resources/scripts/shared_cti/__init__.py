@@ -1,13 +1,19 @@
-"""Reusable MISP, TAXII, and VirusTotal integration sketches (env-based)."""
+"""Reusable MISP, TAXII, and VirusTotal integration (env-based config, injected HTTP client)."""
 
-from .bridge import misp_search_attributes, taxii_get_objects, virustotal_file_report
-from .config import CtiConfig, load_cti_config, virustotal_configured
+from .bridge import SharedCtiBridge
+from .config import (
+    CtiConfig,
+    load_cti_config,
+    misp_configured,
+    taxii_configured,
+    virustotal_configured,
+)
 
 __all__ = [
     "CtiConfig",
+    "SharedCtiBridge",
     "load_cti_config",
-    "misp_search_attributes",
-    "taxii_get_objects",
-    "virustotal_file_report",
+    "misp_configured",
+    "taxii_configured",
     "virustotal_configured",
 ]

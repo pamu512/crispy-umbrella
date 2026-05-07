@@ -2,6 +2,7 @@
 import argparse
 import csv
 import glob
+import logging
 import os
 import shutil
 import subprocess
@@ -270,13 +271,15 @@ from prompt_toolkit.validation import ValidationError
 
 def validate_date(date_text):
     """Validates that the input is in YYYY-MM-DD format and is a valid date."""
+    log = logging.getLogger(__name__)
     try:
         if not date_text:
             raise ValueError
         datetime.strptime(date_text, "%Y-%m-%d")
         return True
-    except ValueError:
-        raise ValidationError(message="Please enter a valid date in YYYY-MM-DD format.")
+    except ValueError as e:
+        log.error("Invalid date input %r: %s", date_text, e)
+        raise ValidationError(message="Please enter a valid date in YYYY-MM-DD format.") from e
 
 def main():
     parser = argparse.ArgumentParser(description="Brand Scout Tool")

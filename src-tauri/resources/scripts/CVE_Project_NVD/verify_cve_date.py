@@ -1,6 +1,18 @@
 import re
+import sys
 import requests
+from pathlib import Path
 from bs4 import BeautifulSoup
+
+for _root in Path(__file__).resolve().parents:
+    if (_root / "shared_utils" / "retry_backoff.py").is_file():
+        sys.path.insert(0, str(_root / "shared_utils"))
+        break
+else:
+    raise ImportError("shared_utils/retry_backoff.py not found from verify_cve_date.py")
+
+from circuit_breaker import circuit_protect
+from retry_backoff import with_exponential_backoff
 from difflib import SequenceMatcher
 from urllib.parse import urlparse
 import json
@@ -182,8 +194,20 @@ def parse_any_date_to_iso_ms(date_str: str) -> str | None:
 
 # Change fuzzy_find_date to use session.get (for connection reuse).
 def fuzzy_find_date(session: requests.Session, url: str, timeout=20, top_hits=8):
-    r = session.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"})
-    r.raise_for_status()
+    def _session_get() -> requests.Response:
+        resp = session.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+        return resp
+
+    def _fetch() -> requests.Response:
+        return circuit_protect("cve_reference_http", _session_get)
+
+    r = with_exponential_backoff(
+        _fetch,
+        max_retries=3,
+        base_delay_s=1.0,
+        retry_on=(requests.RequestException,),
+    )
 
     soup = BeautifulSoup(r.text, "html.parser")
     text = soup.get_text("\n", strip=True)

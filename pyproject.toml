@@ -1,0 +1,53 @@
+[project]
+name = "crispy-umbrella"
+version = "0.0.0"
+description = "Workspace meta-package for Python tooling (mypy, dev deps)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.8",
+  "pandas-stubs",
+  "pydantic>=2",
+  "types-requests",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+show_error_codes = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+no_implicit_optional = true
+strict_equality = true
+explicit_package_bases = true
+namespace_packages = true
+mypy_path = [
+  ".",
+  "src-tauri/resources/scripts/shared_utils",
+]
+plugins = ["pydantic.mypy"]
+files = [
+  "exceptions.py",
+  "main_pipeline.py",
+  "models",
+  "src-tauri/resources/scripts/shared_utils",
+]
+exclude = [
+  "(?x)(.*/tests/.*)",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "pytest",
+  "validators",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pandas"
+ignore_missing_imports = false
+

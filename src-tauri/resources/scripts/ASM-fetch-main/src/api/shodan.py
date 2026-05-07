@@ -6,6 +6,7 @@ import logging
 from typing import Dict, List, Set, Tuple
 
 import shodan
+from circuit_breaker import DependencyUnavailableError, circuit_protect
 from src.utils.validators import is_valid_domain
 
 
@@ -34,7 +35,7 @@ def get_shodan_subdomains(domain: str, shodan_api_key: str, verbose: bool = Fals
         
         for query in queries:
             try:
-                count_result = api.count(query)
+                count_result = circuit_protect("asm_shodan", lambda: api.count(query))
                 total = count_result.get('total', 0) if isinstance(count_result, dict) else int(count_result)
                 logger.info(f"Shodan has {total} entries for query: {query}")
                 
@@ -58,6 +59,8 @@ def get_shodan_subdomains(domain: str, shodan_api_key: str, verbose: bool = Fals
 
                 logger.info(f"Shodan query '{query}' found {total} entries, {matched_entries} matches the target domain.")
 
+            except DependencyUnavailableError:
+                raise
             except Exception as e:
                 logger.error(f"Error processing Shodan query '{query}': {e}")
                 continue
@@ -102,7 +105,7 @@ def batch_shodan_host_info(ip_list: List[str], shodan_api_key: str) -> Dict[str,
         batch = ip_list[i:i + batch_size]
         query = "ip:" + ",".join(batch)
         try:
-            response = api.search(query, limit=batch_size)
+            response = circuit_protect("asm_shodan", lambda: api.search(query, limit=batch_size))
             for match in response.get("matches", []):
                 ip = match.get("ip_str")
                 vulns = match.get("vulns", [])
@@ -125,6 +128,8 @@ def batch_shodan_host_info(ip_list: List[str], shodan_api_key: str) -> Dict[str,
                             results[ip]["ports"].append({"data": data_entry})
                 else:
                     results[ip]["ports"].append(raw_match)
+        except DependencyUnavailableError:
+            raise
         except shodan.APIError as e:
             logger.error(f"Shodan batch query error: {e}")
             for ip in batch:

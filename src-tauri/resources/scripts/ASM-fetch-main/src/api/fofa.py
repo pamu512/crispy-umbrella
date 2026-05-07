@@ -7,6 +7,7 @@ import certifi
 import time
 import os
 from requests.exceptions import SSLError, RequestException
+from circuit_breaker import circuit_protect
 from config.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -92,7 +93,10 @@ def get_fofa_subdomains(domain: str, key: str = None, size: int = 10000, fields:
     last_exc = None
     for attempt in range(1, 4):
         try:
-            resp = requests.get(FOFA_URL, params=params, timeout=15, verify=cafile)
+            resp = circuit_protect(
+                "asm_fofa",
+                lambda: requests.get(FOFA_URL, params=params, timeout=15, verify=cafile),
+            )
             resp.raise_for_status()
             data = resp.json()
             last_exc = None
@@ -110,7 +114,10 @@ def get_fofa_subdomains(domain: str, key: str = None, size: int = 10000, fields:
         # try insecurely as a last resort (not recommended for production)
         try:
             logger.warning("FOFA: falling back to verify=False for domain %s (insecure).", domain)
-            resp = requests.get(FOFA_URL, params=params, timeout=15, verify=False)
+            resp = circuit_protect(
+                "asm_fofa",
+                lambda: requests.get(FOFA_URL, params=params, timeout=15, verify=False),
+            )
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:

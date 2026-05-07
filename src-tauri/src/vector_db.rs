@@ -104,6 +104,16 @@ fn store_path() -> Result<&'static Path, VectorDbError> {
         ))
 }
 
+/// Whether the local vectors SQLite file has been registered (Tauri `setup` / headless init).
+pub fn vector_store_initialized_for_debug() -> bool {
+    VECTOR_STORE_PATH.get().is_some()
+}
+
+/// Absolute path to ``vectors.sqlite`` when initialized (debug dashboards).
+pub fn vector_store_absolute_path_for_debug() -> Option<String> {
+    VECTOR_STORE_PATH.get().map(|p| p.display().to_string())
+}
+
 fn open_store() -> Result<Connection, VectorDbError> {
     let p = store_path()?;
     let conn = Connection::open(p).map_err(|e| VectorDbError::Store(e.to_string()))?;

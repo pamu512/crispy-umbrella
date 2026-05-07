@@ -11,37 +11,57 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import logging
 import math
 import os
 import re
+from io import StringIO
 import shutil
 import sys
 import time
+from collections.abc import Iterable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from types import ModuleType
+from typing import TextIO, cast
+
+from constants import (
+    BUNDLED_PROJECT_FOLDER_NAMES,
+    ENV_CTI_LOGS_DIR,
+    ENV_CTI_WORKSPACE_PATH,
+    HOME_DOT_VAULT8_LOG_PARTS,
+    INGEST_LOG_FILENAME,
+    WINDOWS_LOCALAPPDATA_VAULT8_LOG_PARTS,
+)
+from db_manager import CTIVault, parse_cvss_base_score
+from exceptions import JsonValue
+from graceful_shutdown import install_handlers, shutdown_requested
+from input_validation import (
+    ValidationError,
+    validate_csv_file_path,
+    validate_optional_project_folder,
+    validate_optional_project_type,
+    validate_optional_workspace_directory,
+    validate_workspace_path_required,
+)
+from logger import audit_state_change
+from retry_backoff import with_exponential_backoff
+from time_execution import time_execution
+from versioned_export import with_export_version
+
+_LOG = logging.getLogger(__name__)
 
 try:
-    import pandas as pd
+    import pandas as _pandas_mod
 
+    pd: ModuleType | None = _pandas_mod
     _HAS_PANDAS = True
 except ImportError:
-    pd = None  # type: ignore[assignment]
+    pd = None
     _HAS_PANDAS = False
 
-from db_manager import CTIVault, parse_cvss_base_score
-
-# Same eight features as Rust ``validate_features_bundle``.
-PROJECT_FOLDERS = (
-    "Intelx_Crawler",
-    "CVE_Project_NVD",
-    "ASM-fetch-main",
-    "Ransomware_live_event_victim",
-    "Phishing_and_Social_Media_All-in-one",
-    "Social_MediaV2",
-    "IOCs-crawler-main",
-    "Compromised_user_Mac",
-)
+# Same eight features as Rust ``validate_features_bundle`` — canonical names in ``constants``.
+PROJECT_FOLDERS = BUNDLED_PROJECT_FOLDER_NAMES
 
 _EXTRA_OUTPUT_GLOBS = (
     "final_report",
@@ -49,6 +69,30 @@ _EXTRA_OUTPUT_GLOBS = (
     "output_result",
     "output",
 )
+
+
+def _gather_project_output_csvs(project_base: Path) -> list[Path]:
+    candidates: list[Path] = []
+    for sub in _EXTRA_OUTPUT_GLOBS:
+        d = project_base / sub
+        if d.is_dir():
+            candidates.extend(d.rglob("*.csv"))
+    return sorted(set(candidates))
+
+
+def _sync_shutdown_payload(
+    root: Path,
+    files_summary: list[dict[str, object]],
+    rows_total: int,
+) -> dict[str, object]:
+    return with_export_version(
+        {
+            "root": str(root),
+            "files": files_summary,
+            "rows": rows_total,
+            "shutdown": True,
+        }
+    )
 
 # Maps bundled folder names to FieldMapper profile keys (8 project types).
 FOLDER_TO_PROFILE: dict[str, str] = {
@@ -67,7 +111,7 @@ def _norm_header(h: str) -> str:
     return h.strip().strip("\ufeff").lower().replace(" ", "_")
 
 
-def _cell_str(v: Any) -> str:
+def _cell_str(v: object) -> str:
     if v is None:
         return ""
     if _HAS_PANDAS and isinstance(v, float) and pd is not None and pd.isna(v):
@@ -77,31 +121,32 @@ def _cell_str(v: Any) -> str:
     return str(v).strip()
 
 
-def normalize_date(value: Any) -> str | None:
-    """Normalize CSV date-like values to UTC ISO8601 ``...Z`` strings."""
-    if value is None or value == "":
-        return None
-    if _HAS_PANDAS and pd is not None:
-        try:
-            if pd.isna(value):
-                return None
-        except (TypeError, ValueError):
-            pass
-        ts = pd.to_datetime(value, errors="coerce", utc=True)
-        if pd.isna(ts):
+_DATE_FORMATS = (
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d",
+    "%m/%d/%Y",
+    "%d/%m/%Y",
+)
+
+
+def _normalize_date_pandas(value: object) -> str | None:
+    assert pd is not None
+    try:
+        if pd.isna(value):
             return None
-        return ts.strftime("%Y-%m-%dT%H:%M:%SZ")
-    s = str(value).strip()
-    if not s or s.lower() in ("nan", "none", "n/a", "nat"):
+    except (TypeError, ValueError):
+        pass
+    ts = pd.to_datetime(value, errors="coerce", utc=True)
+    if pd.isna(ts):
         return None
-    for fmt in (
-        "%Y-%m-%dT%H:%M:%SZ",
-        "%Y-%m-%dT%H:%M:%S%z",
-        "%Y-%m-%d %H:%M:%S",
-        "%Y-%m-%d",
-        "%m/%d/%Y",
-        "%d/%m/%Y",
-    ):
+    out: str = cast(str, ts.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    return out
+
+
+def _parse_date_string_formats(s: str) -> str | None:
+    for fmt in _DATE_FORMATS:
         try:
             dt = datetime.strptime(s.replace("Z", ""), fmt.replace("Z", ""))
             if dt.tzinfo is None:
@@ -112,6 +157,18 @@ def normalize_date(value: Any) -> str | None:
     return None
 
 
+def normalize_date(value: object) -> str | None:
+    """Normalize CSV date-like values to UTC ISO8601 ``...Z`` strings."""
+    if value is None or value == "":
+        return None
+    if _HAS_PANDAS and pd is not None:
+        return _normalize_date_pandas(value)
+    s = str(value).strip()
+    if not s or s.lower() in ("nan", "none", "n/a", "nat"):
+        return None
+    return _parse_date_string_formats(s)
+
+
 def _default_date_iso() -> str:
     """Missing date columns default to ``datetime.now().isoformat()`` (naive local)."""
     return datetime.now().isoformat()
@@ -119,23 +176,26 @@ def _default_date_iso() -> str:
 
 def _ingest_log_path() -> Path:
     """Prefer ``CTI_LOGS_DIR``; else Windows ``%LOCALAPPDATA%/Vault8/logs``; else ``~/.vault8/logs``."""
-    ld = (os.environ.get("CTI_LOGS_DIR") or "").strip()
+    ld = (os.environ.get(ENV_CTI_LOGS_DIR) or "").strip()
     if ld:
-        return Path(ld).expanduser() / "ingest.log"
+        return Path(ld).expanduser() / INGEST_LOG_FILENAME
     if sys.platform == "win32":
         la = (os.environ.get("LOCALAPPDATA") or "").strip()
         if la:
-            return Path(la) / "Vault8" / "logs" / "ingest.log"
-    return Path.home() / ".vault8" / "logs" / "ingest.log"
+            return Path(la).joinpath(*WINDOWS_LOCALAPPDATA_VAULT8_LOG_PARTS) / INGEST_LOG_FILENAME
+    return Path.home().joinpath(*HOME_DOT_VAULT8_LOG_PARTS) / INGEST_LOG_FILENAME
 
 
 def _append_ingest_log(message: str) -> None:
-    p = _ingest_log_path()
-    try:
+    def _write() -> None:
+        p = _ingest_log_path()
         p.parent.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         with p.open("a", encoding="utf-8") as f:
             f.write(f"{ts} {message}\n")
+
+    try:
+        with_exponential_backoff(_write, max_retries=3, base_delay_s=0.25, retry_on=(OSError,))
     except OSError:
         pass
 
@@ -145,10 +205,10 @@ def _pack_metadata(
     consumed: set[str],
     *,
     source_csv: str,
-    extras: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+    extras: dict[str, JsonValue] | None = None,
+) -> dict[str, JsonValue]:
     """Columns not mapped to top-level vault fields go into ``metadata`` (plus ``source_csv``)."""
-    meta: dict[str, Any] = {"source_csv": source_csv}
+    meta: dict[str, JsonValue] = {"source_csv": source_csv}
     if extras:
         for k, v in extras.items():
             if v is not None and v != "":
@@ -194,374 +254,170 @@ class FieldMapper:
     @staticmethod
     def map_fields(
         profile: str,
-        row: dict[str, Any],
+        row: Mapping[str, object],
         *,
         source_csv: str,
         fallback_scan_iso: str | None = None,
-    ) -> tuple[dict[str, Any] | None, str | None]:
+    ) -> tuple[dict[str, JsonValue] | None, str | None]:
         """
         Return ``(mapped, None)`` on success. ``mapped`` includes ``table`` in
         ``{"ioc"|"cve"|"asm"}`` plus keys matching batch upsert tuples.
 
         On skip (missing critical primary), return ``(None, reason)``.
         """
+        from field_mapper_profiles import dispatch_field_profile
+
         norm: dict[str, str] = {_norm_header(str(k)): _cell_str(v) for k, v in row.items()}
+        return dispatch_field_profile(
+            profile,
+            norm,
+            source_csv=source_csv,
+            fallback_scan_iso=fallback_scan_iso,
+        )
 
-        if profile == "Intelx":
-            consumed = {
-                "selector",
-                "query",
-                "type",
-                "date",
-                "timestamp",
-                "description",
-                "summary",
-            }
-            selector = norm.get("selector") or norm.get("query") or ""
-            if not selector:
-                return None, "Intelx row missing IOC value (selector/query empty)"
-            raw_type = norm.get("type") or ""
-            ioc_type = _intelx_type_to_ioc_type(raw_type).lower()
-            dt = normalize_date(norm.get("date") or norm.get("timestamp")) or _default_date_iso()
-            meta = _pack_metadata(norm, consumed, source_csv=source_csv)
-            return {
-                "table": "ioc",
-                "ioc_value": selector,
-                "ioc_type": ioc_type,
-                "first_seen": dt,
-                "last_seen": dt,
-                "source_project": "Intelx_Crawler",
-                "metadata": meta,
-            }, None
 
-        if profile == "NVD":
-            consumed = {
-                "cve_id",
-                "score",
-                "severity_score",
-                "published",
-                "published_date",
-                "updated_at",
-                "lastmodified",
-                "summary",
-                "description",
-                "cvss_v3.1",
-                "cvss_v4.0",
-            }
-            cve_id = norm.get("cve_id") or ""
-            if not cve_id.startswith("CVE-"):
-                return None, f"NVD row missing or invalid cve_id: {cve_id!r}"
-            score_raw = (
-                norm.get("score")
-                or norm.get("severity_score")
-                or norm.get("cvss_v3.1")
-                or norm.get("cvss_v4.0")
-                or ""
+def parse_csv_stdlib_file(stream: TextIO) -> tuple[list[str], list[dict[str, object]]]:
+    """
+    Parse CSV from a **text stream** (stdlib only): iterate rows without loading the whole file.
+
+    Open paths with ``newline=''`` so quoted fields containing line breaks parse correctly
+    (see :mod:`csv` documentation).
+    """
+    r = csv.DictReader(stream)
+    if not r.fieldnames:
+        return [], []
+    columns = [_norm_header(str(h)) for h in r.fieldnames if h]
+    rows: list[dict[str, object]] = []
+    for raw in r:
+        rows.append({_norm_header(k): v for k, v in raw.items() if k})
+    return columns, rows
+
+
+def parse_csv_stdlib_text(text: str) -> tuple[list[str], list[dict[str, object]]]:
+    """Parse CSV from an in-memory string (wrapper around :func:`parse_csv_stdlib_file`)."""
+    return parse_csv_stdlib_file(StringIO(text))
+
+
+def _mapped_row_to_batches(
+    m: dict[str, JsonValue],
+    ioc_batch: list[tuple[str, str, str, str, str | None, str | None]],
+    cve_batch: list[tuple[str, float | None, str, str, str | None]],
+    asm_batch: list[tuple[str, str, str, str, str | None]],
+) -> None:
+    t = str(m["table"])
+    meta = cast(dict[str, JsonValue], m.get("metadata") or {})
+    meta_str = json.dumps(meta, ensure_ascii=False) if meta else None
+    if t == "ioc":
+        ioc_batch.append(
+            (
+                cast(str, m["ioc_value"]),
+                cast(str, m["ioc_type"]),
+                cast(str, m["first_seen"]),
+                cast(str, m["last_seen"]),
+                cast(str | None, m.get("source_project")),
+                meta_str,
             )
-            sev: float | None
-            try:
-                sev = float(score_raw) if score_raw else None
-            except ValueError:
-                sev = parse_cvss_base_score(score_raw) if score_raw else None
-            pub_raw = normalize_date(norm.get("published") or norm.get("published_date"))
-            pub = (pub_raw or "").strip()
-            upd = normalize_date(norm.get("updated_at") or norm.get("lastmodified")) or _default_date_iso()
-            meta = _pack_metadata(norm, consumed, source_csv=source_csv)
-            return {
-                "table": "cve",
-                "cve_id": cve_id,
-                "severity_score": sev,
-                "published_date": pub,
-                "updated_at": upd,
-                "metadata": meta,
-            }, None
-
-        if profile == "ASM":
-            consumed = {
-                "host",
-                "hosts",
-                "ip",
-                "ips",
-                "port",
-                "ports",
-                "opened_ports",
-                "service",
-                "services",
-                "last_scan",
-                "last_scan_at",
-                "type",
-                "unusual_ports",
-            }
-            host = norm.get("host") or norm.get("hosts") or ""
-            ip = norm.get("ip") or norm.get("ips") or ""
-            if not host and not ip:
-                return None, "ASM row missing asset_target (host/ip empty)"
-            if host and ip and ip.upper() != "N/A":
-                asset_target = f"{host}|{ip}"
-            elif host:
-                asset_target = host
-            else:
-                asset_target = ip
-            port = norm.get("port") or norm.get("ports") or norm.get("opened_ports") or ""
-            service = norm.get("service") or norm.get("services") or ""
-            scan_fb = fallback_scan_iso or _default_date_iso()
-            last_scan = normalize_date(norm.get("last_scan") or norm.get("last_scan_at")) or scan_fb
-            asset_type = (
-                (norm.get("type") or "").strip()
-                or ("service" if service else ("host_ip" if ip else "host"))
+        )
+        return
+    if t == "cve":
+        cve_batch.append(
+            (
+                cast(str, m["cve_id"]),
+                cast(float | None, m["severity_score"]),
+                cast(str, m["published_date"]),
+                cast(str, m["updated_at"]),
+                meta_str,
             )
-            status = (norm.get("status") or "active").strip() or "active"
-            extras: dict[str, Any] = {}
-            if port:
-                extras["port"] = port[:400]
-            if service:
-                extras["service"] = service[:400]
-            if host and ip:
-                extras["host"] = host
-                extras["ip"] = ip
-            meta = _pack_metadata(norm, consumed, source_csv=source_csv, extras=extras)
-            return {
-                "table": "asm",
-                "asset_target": asset_target,
-                "asset_type": asset_type,
-                "last_scan_at": last_scan,
-                "status": status,
-                "metadata": meta,
-            }, None
-
-        if profile == "Ransomware":
-            consumed = {
-                "website",
-                "url",
-                "site",
-                "date",
-                "event_date",
-                "victim_name",
-                "company",
-                "victim",
-                "group",
-                "group_name",
-            }
-            website = norm.get("website") or norm.get("url") or norm.get("site") or ""
-            if not website:
-                return None, "Ransomware row missing IOC value (website/url/site empty)"
-            dt = normalize_date(norm.get("date") or norm.get("event_date")) or _default_date_iso()
-            victim = norm.get("victim_name") or norm.get("company") or norm.get("victim") or ""
-            group = norm.get("group") or norm.get("group_name") or ""
-            meta = _pack_metadata(
-                norm,
-                consumed,
-                source_csv=source_csv,
-                extras={"victim_name": victim, "group": group},
+        )
+        return
+    if t == "asm":
+        asm_batch.append(
+            (
+                cast(str, m["asset_target"]),
+                cast(str, m["asset_type"]),
+                cast(str, m["last_scan_at"]),
+                cast(str, m["status"]),
+                meta_str,
             )
-            return {
-                "table": "ioc",
-                "ioc_value": website,
-                "ioc_type": "url",
-                "first_seen": dt,
-                "last_seen": dt,
-                "source_project": "Ransomware_live_event_victim",
-                "metadata": meta,
-            }, None
-
-        if profile == "IOC_Crawler":
-            consumed = {
-                "indicator",
-                "ioc_value",
-                "type",
-                "ioc_type",
-                "source",
-                "source_project",
-                "tags",
-                "tag",
-                "first_seen",
-                "last_seen",
-            }
-            indicator = norm.get("indicator") or norm.get("ioc_value") or ""
-            if not indicator:
-                return None, "IOC_Crawler row missing IOC value (indicator/ioc_value empty)"
-            ioc_type = (norm.get("type") or norm.get("ioc_type") or "unknown").lower() or "unknown"
-            origin = norm.get("source") or norm.get("source_project") or "IOCs-crawler-main"
-            tags = norm.get("tags") or norm.get("tag") or ""
-            fs = normalize_date(norm.get("first_seen")) or _default_date_iso()
-            ls = normalize_date(norm.get("last_seen")) or _default_date_iso()
-            meta = _pack_metadata(norm, consumed, source_csv=source_csv, extras={"tags": tags})
-            return {
-                "table": "ioc",
-                "ioc_value": indicator,
-                "ioc_type": ioc_type,
-                "first_seen": fs,
-                "last_seen": ls,
-                "source_project": origin or "IOCs-crawler-main",
-                "metadata": meta,
-            }, None
-
-        if profile == "Phishing":
-            consumed = {
-                "phish_url",
-                "url",
-                "phishing_url",
-                "target_brand",
-                "brand",
-                "target",
-                "status",
-                "first_seen",
-                "last_seen",
-            }
-            url = norm.get("phish_url") or norm.get("url") or norm.get("phishing_url") or ""
-            if not url:
-                return None, "Phishing row missing IOC value (phish_url/url empty)"
-            brand = norm.get("target_brand") or norm.get("brand") or norm.get("target") or ""
-            status = norm.get("status") or ""
-            fs = normalize_date(norm.get("first_seen")) or _default_date_iso()
-            ls = normalize_date(norm.get("last_seen")) or _default_date_iso()
-            meta = _pack_metadata(
-                norm,
-                consumed,
-                source_csv=source_csv,
-                extras={"target_brand": brand, "status": status},
-            )
-            return {
-                "table": "ioc",
-                "ioc_value": url,
-                "ioc_type": "phishing_url",
-                "first_seen": fs,
-                "last_seen": ls,
-                "source_project": "Phishing_and_Social_Media_All-in-one",
-                "metadata": meta,
-            }, None
-
-        if profile == "Social":
-            consumed = {
-                "profile_link",
-                "url",
-                "link",
-                "handle",
-                "username",
-                "user",
-                "platform",
-                "first_seen",
-                "last_seen",
-            }
-            link = norm.get("profile_link") or norm.get("url") or norm.get("link") or ""
-            if not link:
-                return None, "Social row missing IOC value (profile_link/url empty)"
-            handle = norm.get("handle") or norm.get("username") or norm.get("user") or ""
-            platform = norm.get("platform") or ""
-            fs = normalize_date(norm.get("first_seen")) or _default_date_iso()
-            ls = normalize_date(norm.get("last_seen")) or _default_date_iso()
-            meta = _pack_metadata(
-                norm,
-                consumed,
-                source_csv=source_csv,
-                extras={"handle": handle, "platform": platform},
-            )
-            return {
-                "table": "ioc",
-                "ioc_value": link,
-                "ioc_type": "social",
-                "first_seen": fs,
-                "last_seen": ls,
-                "source_project": "Social_MediaV2",
-                "metadata": meta,
-            }, None
-
-        if profile == "Mac_Audit":
-            consumed = {
-                "hash",
-                "sha256",
-                "ioc_value",
-                "file_path",
-                "path",
-                "filepath",
-                "detection_name",
-                "detection",
-                "name",
-                "first_seen",
-                "last_seen",
-            }
-            h = norm.get("hash") or norm.get("sha256") or norm.get("ioc_value") or ""
-            if not h or len(h) < 32 or not all(c in "0123456789abcdefABCDEF" for c in h):
-                return None, "Mac_Audit row missing or invalid hash (ioc_value)"
-            fpath = norm.get("file_path") or norm.get("path") or norm.get("filepath") or ""
-            det = norm.get("detection_name") or norm.get("detection") or norm.get("name") or ""
-            fs = normalize_date(norm.get("first_seen")) or _default_date_iso()
-            ls = normalize_date(norm.get("last_seen")) or _default_date_iso()
-            meta = _pack_metadata(
-                norm,
-                consumed,
-                source_csv=source_csv,
-                extras={"file_path": fpath, "detection_name": det},
-            )
-            return {
-                "table": "ioc",
-                "ioc_value": h.lower(),
-                "ioc_type": "sha256",
-                "first_seen": fs,
-                "last_seen": ls,
-                "source_project": "Compromised_user_Mac",
-                "metadata": meta,
-            }, None
-
-        if profile == "IOC_Generic":
-            consumed = {
-                "ioc_value",
-                "value",
-                "url",
-                "email",
-                "indicator",
-                "ioc_type",
-                "type",
-                "first_seen",
-                "firstseen",
-                "last_seen",
-                "lastseen",
-                "source_project",
-                "project",
-            }
-            val = (
-                norm.get("ioc_value")
-                or norm.get("value")
-                or norm.get("url")
-                or norm.get("email")
-                or norm.get("indicator")
-                or ""
-            )
-            if not val:
-                return None, "IOC row missing IOC value"
-            ioc_type = (norm.get("ioc_type") or norm.get("type") or "unknown").lower() or "unknown"
-            fs = normalize_date(norm.get("first_seen") or norm.get("firstseen")) or _default_date_iso()
-            ls = normalize_date(norm.get("last_seen") or norm.get("lastseen")) or _default_date_iso()
-            proj = norm.get("source_project") or norm.get("project") or "csv_ingest"
-            meta = _pack_metadata(norm, consumed, source_csv=source_csv)
-            return {
-                "table": "ioc",
-                "ioc_value": val,
-                "ioc_type": ioc_type,
-                "first_seen": fs,
-                "last_seen": ls,
-                "source_project": proj or "csv_ingest",
-                "metadata": meta,
-            }, None
-
-        return None, f"Unknown FieldMapper profile: {profile!r}"
+        )
 
 
-def _read_csv(path: Path) -> tuple[list[str], list[dict[str, Any]]]:
-    """Return (normalized_headers, rows_as_dicts)."""
+def rows_to_vault_upsert_batches(
+    rows: list[dict[str, object]],
+    profile: str,
+    *,
+    source_csv: str,
+    fallback_scan_iso: str | None = None,
+) -> tuple[
+    list[tuple[str, str, str, str, str | None, str | None]],
+    list[tuple[str, float | None, str, str, str | None]],
+    list[tuple[str, str, str, str, str | None]],
+    list[str],
+]:
+    """
+    Pure data path: map normalized CSV rows to vault ``executemany`` tuples + skip log lines.
+
+    No disk, no SQLite, no append-only log I/O. Callers own IO and persistence.
+    If ``profile == \"ASM\"`` and ``fallback_scan_iso`` is missing, uses :func:`_default_date_iso`.
+    """
+    if profile == "ASM" and not fallback_scan_iso:
+        fallback_scan_iso = _default_date_iso()
+    ioc_batch: list[tuple[str, str, str, str, str | None, str | None]] = []
+    cve_batch: list[tuple[str, float | None, str, str, str | None]] = []
+    asm_batch: list[tuple[str, str, str, str, str | None]] = []
+    skip_logs: list[str] = []
+
+    for raw in rows:
+        mapped, err = FieldMapper.map_fields(
+            profile,
+            raw,
+            source_csv=source_csv,
+            fallback_scan_iso=fallback_scan_iso,
+        )
+        if err:
+            skip_logs.append(f"{source_csv}: {err}")
+            continue
+        assert mapped is not None
+        _mapped_row_to_batches(mapped, ioc_batch, cve_batch, asm_batch)
+
+    return ioc_batch, cve_batch, asm_batch, skip_logs
+
+
+_PANDAS_CHUNK_ROWS = 65_536
+
+
+def _read_csv(path: Path) -> tuple[list[str], list[dict[str, object]]]:
+    """
+    IO + parsing on disk without ``Path.read_text()`` / full-buffer reads.
+
+    - **Stdlib:** ``csv.DictReader`` over ``open(..., newline=\"\")`` — line-oriented iteration.
+    - **Pandas:** chunked ``read_csv(iterator=True)`` — bounded in-memory frames per chunk (final
+      ``rows`` list still scales with row count, same as before).
+    """
     if _HAS_PANDAS:
-        df = pd.read_csv(path, dtype=str, keep_default_na=False)
-        df.columns = [_norm_header(str(c)) for c in df.columns]
-        rows = df.to_dict(orient="records")
-        return list(df.columns), rows
-    with path.open(newline="", encoding="utf-8", errors="replace") as f:
-        r = csv.DictReader(f)
-        if not r.fieldnames:
+        assert pd is not None
+        columns: list[str] = []
+        rows: list[dict[str, object]] = []
+        try:
+            reader = pd.read_csv(
+                path,
+                dtype=str,
+                keep_default_na=False,
+                chunksize=_PANDAS_CHUNK_ROWS,
+                iterator=True,
+            )
+        except pd.errors.EmptyDataError:
             return [], []
-        rows = []
-        for raw in r:
-            rows.append({_norm_header(k): v for k, v in raw.items() if k})
-        return list(rows[0].keys()) if rows else [], rows
+        seen_columns = False
+        for chunk in reader:
+            chunk.columns = [_norm_header(str(c)) for c in chunk.columns]
+            if not seen_columns:
+                columns = list(chunk.columns)
+                seen_columns = True
+            rows.extend(chunk.to_dict(orient="records"))
+        return columns, rows
+    with path.open("r", encoding="utf-8", errors="replace", newline="") as f:
+        return parse_csv_stdlib_file(f)
 
 
 def _project_folder_from_path(path: Path) -> str | None:
@@ -587,34 +443,65 @@ def _intelx_type_to_ioc_type(raw: str) -> str:
     return t.replace(" ", "_")[:64]
 
 
+def _infer_asm_from_path_and_columns(path: Path, p: str, colset: set[str]) -> bool:
+    if "asm-fetch" in p or "asm_fetch" in p or path.name.endswith("_subdomains.csv"):
+        return "hosts" in colset or "host" in colset
+    return "hosts" in colset and ("ips" in colset or "ip" in colset)
+
+
+def _infer_cve_from_path_and_columns(p: str, colset: set[str]) -> bool:
+    if "cve_project_nvd" in p or "cve_id" in colset:
+        return True
+    return any(c.startswith("cvss") for c in colset) and (
+        "description" in colset or "cve_id" in colset
+    )
+
+
 def detect_project_type(path: Path, columns: Iterable[str]) -> str:
     """Infer ``CVE`` | ``IOC`` | ``ASM`` when path is not under a known project folder."""
     p = str(path).lower()
     colset = {str(c).lower() for c in columns}
 
-    if "asm-fetch" in p or "asm_fetch" in p or path.name.endswith("_subdomains.csv"):
-        if "hosts" in colset or "host" in colset:
-            return "ASM"
-    if "hosts" in colset and ("ips" in colset or "ip" in colset):
+    if _infer_asm_from_path_and_columns(path, p, colset):
         return "ASM"
-
-    if "cve_project_nvd" in p or "cve_id" in colset:
+    if _infer_cve_from_path_and_columns(p, colset):
         return "CVE"
-    if any(c.startswith("cvss") for c in colset) and ("description" in colset or "cve_id" in colset):
-        return "CVE"
-
-    if (
-        "ioc_value" in colset
-        or "ioc_type" in colset
-        or ("intelx_crawler" in p and ("url" in colset or "email" in colset))
-        or ("type" in colset and "value" in colset)
-    ):
-        return "IOC"
-
-    if "intelx" in p or "csv_output" in p or "final_report" in p:
-        return "IOC"
-
     return "IOC"
+
+
+def _mtime_fallback_iso(path: Path) -> str:
+    return normalize_date(datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)) or _default_date_iso()
+
+
+def _resolve_workspace_root_for_ingest(
+    workspace_root: Path | str | None,
+) -> Path | None:
+    """Resolve and validate ``workspace_root`` for ingest (raises ``ValidationError`` on bad paths)."""
+    if workspace_root is None:
+        return None
+    if isinstance(workspace_root, Path):
+        try:
+            ws = workspace_root.expanduser().resolve()
+        except OSError as e:
+            raise ValidationError(
+                {
+                    "field": "workspace_root",
+                    "path": str(workspace_root),
+                    "reason": "path_resolve",
+                    "detail": str(e),
+                },
+                message="workspace_root could not be resolved",
+            ) from e
+        if not ws.is_dir():
+            raise ValidationError(
+                {"field": "workspace_root", "path": str(ws), "reason": "not_a_directory"},
+                message="workspace_root must be an existing directory when set",
+            )
+        return ws
+    return validate_optional_workspace_directory(
+        str(workspace_root),
+        field="workspace_root",
+    )
 
 
 class CSVIngestor:
@@ -626,11 +513,11 @@ class CSVIngestor:
     def map_fields(
         self,
         project_profile: str,
-        row: dict[str, Any],
+        row: Mapping[str, object],
         *,
         source_csv: str = "",
         fallback_scan_iso: str | None = None,
-    ) -> tuple[dict[str, Any] | None, str | None]:
+    ) -> tuple[dict[str, JsonValue] | None, str | None]:
         """Delegate to ``FieldMapper`` (trim, ``ioc_type`` lower, metadata packing)."""
         return FieldMapper.map_fields(
             project_profile,
@@ -641,69 +528,25 @@ class CSVIngestor:
 
     def _ingest_mapped(
         self,
-        rows: list[dict[str, Any]],
-        source: Path,
+        rows: list[dict[str, object]],
         profile: str,
         *,
+        source_csv: str,
         fallback_scan_iso: str | None = None,
     ) -> int:
-        if profile == "ASM" and not fallback_scan_iso:
-            fallback_scan_iso = (
-                normalize_date(datetime.fromtimestamp(source.stat().st_mtime, tz=timezone.utc))
-                or _default_date_iso()
-            )
-        ioc_batch: list[tuple[str, str, str, str, str | None, str | None]] = []
-        cve_batch: list[tuple[str, float | None, str, str, str | None]] = []
-        asm_batch: list[tuple[str, str, str, str, str | None]] = []
+        """
+        IO orchestration: pure mapping via :func:`rows_to_vault_upsert_batches`, then vault writes.
 
-        for raw in rows:
-            mapped, err = FieldMapper.map_fields(
-                profile,
-                raw,
-                source_csv=source.name,
-                fallback_scan_iso=fallback_scan_iso,
-            )
-            if err:
-                _append_ingest_log(f"{source}: {err}")
-                continue
-            t = mapped["table"]
-            if t == "ioc":
-                meta = mapped.get("metadata") or {}
-                meta_str = json.dumps(meta, ensure_ascii=False) if meta else None
-                ioc_batch.append(
-                    (
-                        mapped["ioc_value"],
-                        mapped["ioc_type"],
-                        mapped["first_seen"],
-                        mapped["last_seen"],
-                        mapped.get("source_project"),
-                        meta_str,
-                    )
-                )
-            elif t == "cve":
-                meta = mapped.get("metadata") or {}
-                meta_str = json.dumps(meta, ensure_ascii=False) if meta else None
-                cve_batch.append(
-                    (
-                        mapped["cve_id"],
-                        mapped["severity_score"],
-                        mapped["published_date"],
-                        mapped["updated_at"],
-                        meta_str,
-                    )
-                )
-            elif t == "asm":
-                meta = mapped.get("metadata") or {}
-                meta_str = json.dumps(meta, ensure_ascii=False) if meta else None
-                asm_batch.append(
-                    (
-                        mapped["asset_target"],
-                        mapped["asset_type"],
-                        mapped["last_scan_at"],
-                        mapped["status"],
-                        meta_str,
-                    )
-                )
+        ``source_csv`` is the logical filename (not necessarily an on-disk path).
+        """
+        ioc_batch, cve_batch, asm_batch, skip_logs = rows_to_vault_upsert_batches(
+            rows,
+            profile,
+            source_csv=source_csv,
+            fallback_scan_iso=fallback_scan_iso,
+        )
+        for msg in skip_logs:
+            _append_ingest_log(msg)
 
         n = 0
         if ioc_batch:
@@ -740,44 +583,88 @@ class CSVIngestor:
         project_folder: str | None = None,
         workspace_root: Path | str | None = None,
     ) -> int:
-        path = Path(file_path).expanduser().resolve()
-        if not path.is_file():
-            raise FileNotFoundError(path)
+        path = validate_csv_file_path(file_path)
 
         columns, rows = _read_csv(path)
         if not rows:
             return 0
 
-        folder = (project_folder or "").strip() or _project_folder_from_path(path)
-        ws = Path(workspace_root).expanduser().resolve() if workspace_root else None
+        validated_folder = (
+            validate_optional_project_folder(project_folder)
+            if project_folder is not None
+            else None
+        )
+        validated_type = (
+            validate_optional_project_type(project_type)
+            if project_type is not None
+            else None
+        )
+
+        folder = validated_folder or _project_folder_from_path(path)
+
+        ws = _resolve_workspace_root_for_ingest(workspace_root)
 
         if folder in FOLDER_TO_PROFILE:
-            prof = FOLDER_TO_PROFILE[folder]
-            fb = (
-                normalize_date(datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc))
-                or _default_date_iso()
-                if prof == "ASM"
-                else None
-            )
-            n = self._ingest_mapped(rows, path, prof, fallback_scan_iso=fb)
-            self._maybe_archive_csv(path, ws, folder)
-            return n
+            return self._ingest_bundled_folder_csv(rows, path, folder, ws)
 
-        pt = (project_type or detect_project_type(path, columns)).upper()
+        return self._ingest_inferred_project_csv(
+            rows,
+            path,
+            columns,
+            validated_type,
+            ws,
+            folder,
+        )
+
+    def _ingest_bundled_folder_csv(
+        self,
+        rows: list[dict[str, object]],
+        path: Path,
+        folder: str,
+        ws: Path | None,
+    ) -> int:
+        prof = FOLDER_TO_PROFILE[folder]
+        fb = _mtime_fallback_iso(path) if prof == "ASM" else None
+        n = self._ingest_mapped(
+            rows,
+            prof,
+            source_csv=path.name,
+            fallback_scan_iso=fb,
+        )
+        self._maybe_archive_csv(path, ws, folder)
+        return n
+
+    def _ingest_inferred_project_csv(
+        self,
+        rows: list[dict[str, object]],
+        path: Path,
+        columns: list[str],
+        validated_type: str | None,
+        ws: Path | None,
+        folder: str | None,
+    ) -> int:
+        pt = validated_type or detect_project_type(path, columns)
         if pt == "CVE":
-            n = self._ingest_mapped(rows, path, "NVD")
+            n = self._ingest_mapped(rows, "NVD", source_csv=path.name)
             self._maybe_archive_csv(path, ws, folder)
             return n
         if pt == "ASM":
-            fb = normalize_date(datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)) or _default_date_iso()
-            n = self._ingest_mapped(rows, path, "ASM", fallback_scan_iso=fb)
+            n = self._ingest_mapped(
+                rows,
+                "ASM",
+                source_csv=path.name,
+                fallback_scan_iso=_mtime_fallback_iso(path),
+            )
             self._maybe_archive_csv(path, ws, folder)
             return n
         if pt == "IOC":
-            n = self._ingest_mapped(rows, path, "IOC_Generic")
+            n = self._ingest_mapped(rows, "IOC_Generic", source_csv=path.name)
             self._maybe_archive_csv(path, ws, folder)
             return n
-        raise ValueError(f"Unknown project_type: {pt}")
+        raise ValidationError(
+            {"field": "project_type", "resolved": pt},
+            message=f"Unknown project_type after inference: {pt}",
+        )
 
     def _ingest_key(self, path: Path) -> str:
         return f"csv_ingest_mtime_ns:{path.resolve()}"
@@ -798,7 +685,42 @@ class CSVIngestor:
             return
         self.vault.set_vault_meta(self._ingest_key(path), str(st.st_mtime_ns))
 
-    def sync_project_outputs(self, base_dir: Path | str) -> dict[str, Any]:
+    def _ingest_csv_in_sync(
+        self,
+        path: Path,
+        proj: str,
+        root: Path,
+        files_summary: list[dict[str, object]],
+    ) -> int:
+        """Ingest one CSV during workspace sync; append outcome to ``files_summary``."""
+        try:
+            n = self.ingest_csv(path, project_folder=proj, workspace_root=root)
+            if path.is_file():
+                self._mark_done(path)
+            files_summary.append(
+                {"path": str(path), "status": "ok", "rows": n, "project_folder": proj}
+            )
+            audit_state_change(
+                _LOG,
+                component="ingestor.CSVIngestor",
+                previous_state="eligible",
+                new_state="ingested",
+                detail=f"path={path};rows={n};project_folder={proj}",
+            )
+            return n
+        except Exception as e:  # noqa: BLE001
+            _LOG.exception("ingest failed for %s", path)
+            audit_state_change(
+                _LOG,
+                component="ingestor.CSVIngestor",
+                previous_state="eligible",
+                new_state="ingest_failed",
+                detail=f"path={path};error={e!s}",
+            )
+            files_summary.append({"path": str(path), "status": "error", "error": str(e)})
+            return 0
+
+    def sync_project_outputs(self, base_dir: Path | str) -> dict[str, object]:
         """
         Walk the eight project trees under ``base_dir``, ingest CSVs under common output dirs.
 
@@ -807,63 +729,118 @@ class CSVIngestor:
         ``<project>/output/archived_logs/`` when they live under the workspace tree.
         """
         root = Path(base_dir).expanduser().resolve()
-        summary: dict[str, Any] = {"root": str(root), "files": [], "rows": 0}
         if not root.is_dir():
             raise NotADirectoryError(root)
+        files_summary: list[dict[str, object]] = []
+        rows_total = 0
 
-        for proj in PROJECT_FOLDERS:
-            base = root / proj
-            if not base.is_dir():
-                continue
-            candidates: list[Path] = []
-            for sub in _EXTRA_OUTPUT_GLOBS:
-                d = base / sub
-                if d.is_dir():
-                    candidates.extend(d.rglob("*.csv"))
-            for path in sorted(set(candidates)):
-                if not path.is_file():
-                    continue
-                if "archived_logs" in path.parts:
-                    continue
-                if self._should_skip(path):
-                    summary["files"].append({"path": str(path), "status": "skipped", "rows": 0})
-                    continue
-                try:
-                    n = self.ingest_csv(path, project_folder=proj, workspace_root=root)
-                    if path.is_file():
-                        self._mark_done(path)
-                    summary["rows"] += n
-                    summary["files"].append(
-                        {"path": str(path), "status": "ok", "rows": n, "project_folder": proj}
+        with time_execution(_LOG, label="ingestor.CSVIngestor.sync_project_outputs"):
+            for proj in PROJECT_FOLDERS:
+                if shutdown_requested():
+                    audit_state_change(
+                        _LOG,
+                        component="ingestor.CSVIngestor",
+                        previous_state="syncing",
+                        new_state="shutdown_sig",
+                        detail="SIGINT/SIGTERM: stopped before next project folder",
                     )
-                except Exception as e:  # noqa: BLE001
-                    summary["files"].append({"path": str(path), "status": "error", "error": str(e)})
-        return summary
+                    return _sync_shutdown_payload(root, files_summary, rows_total)
+                base = root / proj
+                if not base.is_dir():
+                    continue
+                for path in _gather_project_output_csvs(base):
+                    if shutdown_requested():
+                        audit_state_change(
+                            _LOG,
+                            component="ingestor.CSVIngestor",
+                            previous_state="syncing",
+                            new_state="shutdown_sig",
+                            detail="SIGINT/SIGTERM: stopped before next CSV file",
+                        )
+                        return _sync_shutdown_payload(root, files_summary, rows_total)
+                    if not path.is_file():
+                        continue
+                    if "archived_logs" in path.parts:
+                        continue
+                    if self._should_skip(path):
+                        audit_state_change(
+                            _LOG,
+                            component="ingestor.CSVIngestor",
+                            previous_state="eligible",
+                            new_state="skipped_idempotent",
+                            detail=str(path),
+                        )
+                        files_summary.append({"path": str(path), "status": "skipped", "rows": 0})
+                        continue
+                    rows_total += self._ingest_csv_in_sync(path, proj, root, files_summary)
+        return with_export_version(
+            {"root": str(root), "files": files_summary, "rows": rows_total, "shutdown": False}
+        )
 
 
-def run_sync(workspace: str | None = None) -> dict[str, Any]:
-    ws = (workspace or os.environ.get("CTI_WORKSPACE_PATH") or "").strip()
-    if not ws:
-        raise SystemExit("WORKSPACE path required (arg or CTI_WORKSPACE_PATH)")
-    with CTIVault() as vault:
-        ing = CSVIngestor(vault)
-        return ing.sync_project_outputs(ws)
+def run_sync(vault: CTIVault, workspace: str | None = None) -> dict[str, object]:
+    raw = workspace if workspace is not None else os.environ.get(ENV_CTI_WORKSPACE_PATH)
+    root_path = validate_workspace_path_required(raw, field="workspace")
+    ing = CSVIngestor(vault)
+    return ing.sync_project_outputs(root_path)
 
 
-def run_ingest_file(path: str, project_type: str | None, project_folder: str | None) -> dict[str, Any]:
-    ws = (os.environ.get("CTI_WORKSPACE_PATH") or "").strip()
-    with CTIVault() as vault:
+def run_ingest_file(
+    vault: CTIVault,
+    path: str,
+    project_type: str | None,
+    project_folder: str | None,
+) -> dict[str, object]:
+    ws = validate_optional_workspace_directory(os.environ.get(ENV_CTI_WORKSPACE_PATH))
+    with time_execution(_LOG, label="ingestor.run_ingest_file"):
         ing = CSVIngestor(vault)
         n = ing.ingest_csv(
             path,
             project_type,
             project_folder=project_folder,
-            workspace_root=ws or None,
+            workspace_root=ws,
         )
-        return {"path": path, "rows": n}
+        audit_state_change(
+            _LOG,
+            component="ingestor.run_ingest_file",
+            previous_state="eligible",
+            new_state="ingested",
+            detail=f"path={path};rows={n}",
+        )
+        return with_export_version({"path": path, "rows": n})
+
+
+def _cli_run_sync(args: argparse.Namespace) -> int:
+    try:
+        with CTIVault() as vault:
+            with time_execution(_LOG, label="ingestor.main.sync"):
+                out = run_sync(vault, args.workspace or None)
+    except ValidationError as e:
+        print(json.dumps({"error": str(e), "context": e.context}, indent=2), file=sys.stderr)
+        return 2
+    print(json.dumps(out, indent=2))
+    if out.get("shutdown"):
+        return 0
+    files_out = cast(list[dict[str, object]], out["files"])
+    errors = [f for f in files_out if f.get("status") == "error"]
+    return 1 if errors else 0
+
+
+def _cli_run_ingest_file(args: argparse.Namespace) -> int:
+    try:
+        with CTIVault() as vault:
+            with time_execution(_LOG, label="ingestor.main.ingest_file"):
+                out = run_ingest_file(vault, args.file, args.type, args.project)
+    except ValidationError as e:
+        print(json.dumps({"error": str(e), "context": e.context}, indent=2), file=sys.stderr)
+        return 2
+    print(json.dumps(out, indent=2))
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
+    install_handlers()
+
     argv = argv if argv is not None else sys.argv[1:]
     p = argparse.ArgumentParser(description="CTI CSV vault ingestor")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -872,8 +849,8 @@ def main(argv: list[str] | None = None) -> int:
     p_sync.add_argument(
         "workspace",
         nargs="?",
-        default=os.environ.get("CTI_WORKSPACE_PATH", ""),
-        help="Writable workspace root (default: CTI_WORKSPACE_PATH)",
+        default=os.environ.get(ENV_CTI_WORKSPACE_PATH, ""),
+        help=f"Writable workspace root (default: {ENV_CTI_WORKSPACE_PATH})",
     )
 
     p_one = sub.add_parser("ingest-file", help="Ingest a single CSV")
@@ -888,14 +865,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
     if args.cmd == "sync":
-        out = run_sync(args.workspace or None)
-        print(json.dumps(out, indent=2))
-        errors = [f for f in out["files"] if f.get("status") == "error"]
-        return 1 if errors else 0
+        return _cli_run_sync(args)
     if args.cmd == "ingest-file":
-        out = run_ingest_file(args.file, args.type, args.project)
-        print(json.dumps(out, indent=2))
-        return 0
+        return _cli_run_ingest_file(args)
     return 1
 
 

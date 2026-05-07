@@ -34,7 +34,15 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
 else:
     _SCRIPTS_ROOT = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(_SCRIPTS_ROOT / "shared_utils"))
+from circuit_breaker import circuit_protect  # noqa: E402
 from db_manager import CTIVault  # noqa: E402
+
+for _ex in Path(__file__).resolve().parents:
+    if (_ex / "exceptions.py").is_file():
+        if str(_ex) not in sys.path:
+            sys.path.insert(0, str(_ex))
+        break
+from exceptions import DependencyUnavailableError  # noqa: E402
 
 _SSL = ssl.create_default_context()
 
@@ -48,22 +56,25 @@ def _http_request(
     timeout: float = 120.0,
 ) -> tuple[int, str]:
     """Stdlib HTTP — no ``requests`` dependency (system python3 often lacks pip packages)."""
-    req = Request(url, data=body, method=method.upper())
-    if headers:
-        for k, v in headers.items():
-            req.add_header(k, v)
-    try:
-        with urlopen(req, timeout=timeout, context=_SSL) as resp:
-            code = resp.getcode()
-            raw = resp.read()
-    except HTTPError as e:
-        code = e.code
-        raw = e.read() if e.fp else b""
-    except URLError as e:
-        print(f"HTTP error: {e}", flush=True)
-        return 0, ""
-    text = raw.decode("utf-8", errors="replace")
-    return int(code), text
+
+    def _impl() -> tuple[int, str]:
+        req = Request(url, data=body, method=method.upper())
+        if headers:
+            for k, v in headers.items():
+                req.add_header(k, v)
+        try:
+            with urlopen(req, timeout=timeout, context=_SSL) as resp:
+                code = resp.getcode()
+                raw = resp.read()
+        except HTTPError as e:
+            code = e.code
+            raw = e.read() if e.fp else b""
+        except URLError as e:
+            raise e
+        text = raw.decode("utf-8", errors="replace")
+        return int(code), text
+
+    return circuit_protect("intelx_http", _impl)
 
 
 def _post_json(url: str, headers: dict[str, str], payload: dict[str, Any]) -> tuple[int, Any]:
@@ -249,7 +260,14 @@ def main() -> None:
     print(f"POST {base}/intelligent/search", flush=True)
 
     search_url = f"{base}/intelligent/search"
-    code, start_body = _post_json(search_url, headers, payload)
+    try:
+        code, start_body = _post_json(search_url, headers, payload)
+    except DependencyUnavailableError as e:
+        print(f"IntelX unavailable (circuit breaker): {e}", file=sys.stderr)
+        sys.exit(3)
+    except URLError as e:
+        print(f"IntelX network error: {e}", file=sys.stderr)
+        sys.exit(1)
     if code != 200:
         err_txt = start_body if isinstance(start_body, str) else json.dumps(start_body)[:800]
         print(f"IntelX search failed HTTP {code}: {err_txt}", file=sys.stderr)
@@ -264,7 +282,14 @@ def main() -> None:
         sys.exit(1)
 
     print(f"Search id: {search_id} — polling for results…", flush=True)
-    result = _poll_results(base, headers, str(search_id), limit)
+    try:
+        result = _poll_results(base, headers, str(search_id), limit)
+    except DependencyUnavailableError as e:
+        print(f"IntelX unavailable (circuit breaker): {e}", file=sys.stderr)
+        sys.exit(3)
+    except URLError as e:
+        print(f"IntelX network error during poll: {e}", file=sys.stderr)
+        sys.exit(1)
 
     records = result.get("records") or []
     print(f"IntelX returned {len(records)} record(s).", flush=True)

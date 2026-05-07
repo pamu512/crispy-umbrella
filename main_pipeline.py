@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 
 def _is_frozen() -> bool:
@@ -69,6 +71,16 @@ def _ensure_shared_utils_path() -> Path:
     return su
 
 
+def _configure_json_logging() -> None:
+    """JSON stdout + AUDIT level; best-effort if shared_utils is partial."""
+    try:
+        from logger import configure_logging  # noqa: WPS433
+
+        configure_logging()
+    except Exception:
+        pass
+
+
 def cmd_info(_: argparse.Namespace) -> int:
     root = _repo_root()
     su = _shared_utils_dir()
@@ -90,36 +102,82 @@ def cmd_info(_: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_sync(args: argparse.Namespace) -> int:
-    ws = (args.workspace or os.environ.get("CTI_WORKSPACE_PATH") or "").strip()
-    if not ws:
-        print("ERROR: pass --workspace or set CTI_WORKSPACE_PATH", file=sys.stderr)
-        return 2
+def cmd_status(_: argparse.Namespace) -> int:
+    """Print internal Python debug snapshot (circuit breakers) to stdout; also logs ``cti.status``."""
     _ensure_shared_utils_path()
-    from ingestor import run_sync  # noqa: WPS433
+    _configure_json_logging()
+    from debug_status import collect_python_debug_snapshot, log_internal_status  # noqa: WPS433
 
-    out = run_sync(ws)
+    log_internal_status()
+    print(json.dumps(collect_python_debug_snapshot(), indent=2))
+    return 0
+
+
+def cmd_sync(args: argparse.Namespace) -> int:
+    _ensure_shared_utils_path()
+    _configure_json_logging()
+    from db_manager import CTIVault  # noqa: WPS433
+    from exceptions import ValidationError  # noqa: WPS433
+    from ingestor import run_sync  # noqa: WPS433
+    from time_execution import time_execution  # noqa: WPS433
+
+    log = logging.getLogger(__name__)
+    try:
+        with CTIVault() as vault:
+            with time_execution(log, label="main_pipeline.cmd_sync"):
+                out = run_sync(vault, args.workspace or None)
+    except ValidationError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        print(json.dumps({"context": e.context}, indent=2), file=sys.stderr)
+        return 2
     print(json.dumps(out, indent=2))
-    errors = [f for f in out.get("files", []) if f.get("status") == "error"]
+    if out.get("shutdown"):
+        return 0
+    files_raw = out.get("files", [])
+    files = cast(list[dict[str, object]], files_raw)
+    errors = [f for f in files if f.get("status") == "error"]
     return 1 if errors else 0
 
 
 def cmd_ingest_file(args: argparse.Namespace) -> int:
     _ensure_shared_utils_path()
+    _configure_json_logging()
+    from db_manager import CTIVault  # noqa: WPS433
+    from exceptions import ValidationError  # noqa: WPS433
     from ingestor import run_ingest_file  # noqa: WPS433
+    from time_execution import time_execution  # noqa: WPS433
 
-    out = run_ingest_file(args.file, args.type_, args.project)
+    log = logging.getLogger(__name__)
+    try:
+        with CTIVault() as vault:
+            with time_execution(log, label="main_pipeline.cmd_ingest_file"):
+                out = run_ingest_file(vault, args.file, args.type_, args.project)
+    except ValidationError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        print(json.dumps({"context": e.context}, indent=2), file=sys.stderr)
+        return 2
     print(json.dumps(out, indent=2))
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
+    _ensure_shared_utils_path()
+    from graceful_shutdown import install_handlers  # noqa: WPS433
+
+    install_handlers()
+
     argv = argv if argv is not None else sys.argv[1:]
     p = argparse.ArgumentParser(description="CTI Pipeline (vault CSV sync)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_info = sub.add_parser("info", help="Show bundle paths and import check")
     p_info.set_defaults(func=cmd_info)
+
+    p_status = sub.add_parser(
+        "status",
+        help="Internal debug snapshot (circuit breakers); logs cti.status line",
+    )
+    p_status.set_defaults(func=cmd_status)
 
     p_sync = sub.add_parser("sync", help="Ingest all known project CSVs under a workspace root")
     p_sync.add_argument(

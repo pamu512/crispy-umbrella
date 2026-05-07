@@ -9,6 +9,7 @@ import time
 from typing import Dict, List
 
 import requests
+from circuit_breaker import circuit_protect
 from src.utils.validators import is_valid_domain
 
 
@@ -66,7 +67,10 @@ def query_dns_record(
         }
         for attempt in range(max_retries):
             try:
-                response = requests.post(url, json=payload, headers=headers, timeout=10)
+                response = circuit_protect(
+                    "asm_rapidapi_dns",
+                    lambda: requests.post(url, json=payload, headers=headers, timeout=10),
+                )
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException as e:

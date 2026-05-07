@@ -3,6 +3,16 @@
 import os
 from dataclasses import dataclass
 
+from .constants import (
+    ENV_MISP_KEY,
+    ENV_MISP_URL,
+    ENV_TAXII_COLLECTION_HREF,
+    ENV_TAXII_DISCOVERY_URL,
+    ENV_TAXII_PASSWORD,
+    ENV_TAXII_USER,
+    ENV_VT_API_KEY,
+)
+
 
 @dataclass
 class CtiConfig:
@@ -19,13 +29,13 @@ class CtiConfig:
 
 def load_cti_config() -> CtiConfig:
     return CtiConfig(
-        misp_url=os.environ.get("MISP_URL", "").rstrip("/"),
-        misp_key=os.environ.get("MISP_KEY", ""),
-        taxii_collection_href=os.environ.get("TAXII_COLLECTION_HREF", "").rstrip("/"),
-        taxii_user=os.environ.get("TAXII_USER", ""),
-        taxii_password=os.environ.get("TAXII_PASSWORD", ""),
-        taxii_discovery_url=os.environ.get("TAXII_DISCOVERY_URL", "").rstrip("/"),
-        virustotal_api_key=os.environ.get("VT_API_KEY", ""),
+        misp_url=os.environ.get(ENV_MISP_URL, "").rstrip("/"),
+        misp_key=os.environ.get(ENV_MISP_KEY, ""),
+        taxii_collection_href=os.environ.get(ENV_TAXII_COLLECTION_HREF, "").rstrip("/"),
+        taxii_user=os.environ.get(ENV_TAXII_USER, ""),
+        taxii_password=os.environ.get(ENV_TAXII_PASSWORD, ""),
+        taxii_discovery_url=os.environ.get(ENV_TAXII_DISCOVERY_URL, "").rstrip("/"),
+        virustotal_api_key=os.environ.get(ENV_VT_API_KEY, ""),
     )
 
 

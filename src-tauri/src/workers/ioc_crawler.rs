@@ -5,6 +5,7 @@
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
 use std::time::Duration;
 
@@ -14,6 +15,7 @@ use reqwest::header::USER_AGENT;
 use reqwest::StatusCode;
 use rusqlite::params;
 use scraper::{Html, Selector};
+use serde::Serialize;
 use serde_json::json;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::mpsc;
@@ -22,6 +24,28 @@ use crate::vault_db::{self, time_now_iso};
 
 /// Bounded queue depth; backpressure when full (`try_send` / `send` errors).
 const CHANNEL_CAPACITY: usize = 128;
+
+/// Tasks accepted into the bounded mpsc but not yet taken by the worker (`recv`).
+static IOC_MPSC_PENDING: AtomicUsize = AtomicUsize::new(0);
+/// `run_task` executions currently running inside spawned Tokio tasks.
+static IOC_ACTIVE_TASKS: AtomicUsize = AtomicUsize::new(0);
+
+/// IOC crawler queue / worker counters for debug dashboards (best-effort atomics).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IocCrawlerMetrics {
+    pub channel_capacity: usize,
+    pub pending_in_queue: usize,
+    pub active_tasks: usize,
+}
+
+pub fn ioc_crawler_metrics() -> IocCrawlerMetrics {
+    IocCrawlerMetrics {
+        channel_capacity: CHANNEL_CAPACITY,
+        pending_in_queue: IOC_MPSC_PENDING.load(Ordering::Relaxed),
+        active_tasks: IOC_ACTIVE_TASKS.load(Ordering::Relaxed),
+    }
+}
 
 const SOURCE_PROJECT: &str = "IOCs-crawler-main";
 const HTTP_USER_AGENT_VALUE: &str =
@@ -111,7 +135,10 @@ impl IocCrawlerQueue {
                 g.tx.clone()
             };
             match tx.try_send(task) {
-                Ok(()) => return Ok(()),
+                Ok(()) => {
+                    IOC_MPSC_PENDING.fetch_add(1, Ordering::Relaxed);
+                    return Ok(());
+                }
                 Err(mpsc::error::TrySendError::Full(_)) => {
                     return Err(format!(
                         "IOC crawler queue is full (max {} pending); try again shortly",
@@ -141,7 +168,13 @@ fn spawn_receiver_loop(mut rx: mpsc::Receiver<IocCrawlerTask>, app: AppHandle) {
             CHANNEL_CAPACITY
         );
         while let Some(task) = rx.recv().await {
-            let join = tokio::spawn(async move { run_task(task).await });
+            IOC_MPSC_PENDING.fetch_sub(1, Ordering::Relaxed);
+            let join = tokio::spawn(async move {
+                IOC_ACTIVE_TASKS.fetch_add(1, Ordering::Relaxed);
+                let out = run_task(task).await;
+                IOC_ACTIVE_TASKS.fetch_sub(1, Ordering::Relaxed);
+                out
+            });
             match join.await {
                 Ok(Ok(())) => {
                     let _ = app.emit(

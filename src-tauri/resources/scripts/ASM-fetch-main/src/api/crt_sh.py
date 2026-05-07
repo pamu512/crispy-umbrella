@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import List
 
 import requests
+from circuit_breaker import DependencyUnavailableError, circuit_protect
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +43,14 @@ def get_crt_subdomains(domain: str, timeout: int = 15, use_local_fallback: bool 
     url = f"https://crt.sh/json?q={domain}"
     hosts = set()
     try:
-        r = requests.get(url, headers={"Accept": "application/json"}, timeout=timeout)
+        r = circuit_protect(
+            "asm_crt_sh",
+            lambda: requests.get(url, headers={"Accept": "application/json"}, timeout=timeout),
+        )
         r.raise_for_status()
         data = r.json()
+    except DependencyUnavailableError:
+        raise
     except Exception as e:
         logger.debug("crt.sh request failed for %s: %s", domain, e)
         data = None

@@ -142,8 +142,11 @@ class SocialMediaSearchOrchestrator:
                     
             except Exception as e:
                 error_msg = f"Error occurred while getting CSE parameters (attempt {attempt + 1}): {str(e)}"
-                self.logger.warning(error_msg)
-                
+                if attempt == max_retries - 1:
+                    self.logger.error(error_msg, exc_info=True)
+                else:
+                    self.logger.warning(error_msg)
+
                 if attempt == max_retries - 1:
                     self.log_step("Get all platform CSE parameters", "error", error=error_msg)
                     self.log_data["errors"].append({

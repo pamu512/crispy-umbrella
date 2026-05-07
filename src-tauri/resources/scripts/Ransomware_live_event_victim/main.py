@@ -16,10 +16,26 @@ import sqlite3
 import ssl
 import sys
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+_scripts = Path(__file__).resolve().parent.parent
+if str(_scripts / "shared_utils") not in sys.path:
+    sys.path.insert(0, str(_scripts / "shared_utils"))
+
+for _root in Path(__file__).resolve().parents:
+    if (_root / "exceptions.py").is_file():
+        if str(_root) not in sys.path:
+            sys.path.insert(0, str(_root))
+        break
+else:
+    raise ImportError("Could not locate repo root (exceptions.py).")
+
+from circuit_breaker import circuit_protect
+from exceptions import DependencyUnavailableError, NetworkError
 
 DEFAULT_API_BASE = "https://api-pro.ransomware.live"
 _SSL = ssl.create_default_context()
@@ -63,24 +79,33 @@ def iter_months_in_range(start: date, end: date):
 
 
 def http_get_json(url: str, api_key: str) -> Any:
-    req = Request(
-        url,
-        headers={
-            "accept": "application/json",
-            "X-API-KEY": api_key.strip(),
-            "User-Agent": "CTI-Command-Center/ransomware_native_sync",
-        },
-        method="GET",
-    )
-    try:
-        with urlopen(req, timeout=120, context=_SSL) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            return json.loads(raw) if raw.strip() else {}
-    except HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace") if e.fp else ""
-        raise RuntimeError(f"HTTP {e.code}: {body[:800]}") from e
-    except URLError as e:
-        raise RuntimeError(f"network error: {e}") from e
+    def _do() -> Any:
+        req = Request(
+            url,
+            headers={
+                "accept": "application/json",
+                "X-API-KEY": api_key.strip(),
+                "User-Agent": "CTI-Command-Center/ransomware_native_sync",
+            },
+            method="GET",
+        )
+        try:
+            with urlopen(req, timeout=120, context=_SSL) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+                return json.loads(raw) if raw.strip() else {}
+        except HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace") if e.fp else ""
+            raise NetworkError(
+                {"url": url, "http_status": e.code, "body_preview": body[:800]},
+                message=f"HTTP {e.code}: {body[:800]}",
+            ) from e
+        except URLError as e:
+            raise NetworkError(
+                {"url": url, "reason": "url_error", "detail": str(e)},
+                message=f"network error: {e}",
+            ) from e
+
+    return circuit_protect("ransomware_live_api", _do)
 
 
 def extract_array(root: Any) -> list[Any]:
@@ -161,7 +186,7 @@ def ingest_victims(
     for year, month in iter_months_in_range(start, end):
         try:
             rows = fetch_victims_month(base, api_key, year, month)
-        except RuntimeError as e:
+        except (DependencyUnavailableError, NetworkError) as e:
             print(f"⚠️ victims {year}-{month:02d}: {e}", flush=True)
             continue
         for item in rows:
@@ -204,7 +229,7 @@ def ingest_press(
     for year in years:
         try:
             rows = fetch_press_year(base, api_key, year)
-        except RuntimeError as e:
+        except (DependencyUnavailableError, NetworkError) as e:
             print(f"⚠️ press/{year}: {e}", flush=True)
             continue
         for item in rows:

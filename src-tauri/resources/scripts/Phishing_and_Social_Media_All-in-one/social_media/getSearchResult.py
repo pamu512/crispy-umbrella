@@ -10,6 +10,15 @@ import subprocess
 import socket
 from pathlib import Path
 from requests_tor import RequestsTor
+
+for _root in Path(__file__).resolve().parents:
+    if (_root / "shared_utils" / "retry_backoff.py").is_file():
+        sys.path.insert(0, str(_root / "shared_utils"))
+        break
+else:
+    raise ImportError("shared_utils/retry_backoff.py not found")
+
+from retry_backoff import with_exponential_backoff
 from datetime import datetime, timedelta
 
 # Dynamic import of getCSE.py
@@ -100,16 +109,24 @@ def restart_docker_tor():
                     print(f"[DOCKER] Still waiting for Tor connection... ({waited}/{max_wait}s)")
                     # Try to check container status
                     try:
-                        status_result = subprocess.run(
-                            ['docker', 'inspect', '--format', '{{.State.Status}}', TOR_DOCKER_CONTAINER],
-                            capture_output=True,
-                            text=True,
-                            timeout=5
+                        def _docker_inspect():
+                            return subprocess.run(
+                                ['docker', 'inspect', '--format', '{{.State.Status}}', TOR_DOCKER_CONTAINER],
+                                capture_output=True,
+                                text=True,
+                                timeout=5
+                            )
+
+                        status_result = with_exponential_backoff(
+                            _docker_inspect,
+                            max_retries=3,
+                            base_delay_s=0.5,
+                            retry_on=(OSError, subprocess.SubprocessError),
                         )
                         if status_result.returncode == 0:
                             status = status_result.stdout.strip()
                             print(f"[DOCKER] Container status: {status}")
-                    except:
+                    except (OSError, subprocess.SubprocessError):
                         pass
             
             print(f"[DOCKER] Warning: Tor connection not verified after {max_wait}s")
@@ -599,11 +616,16 @@ def retry_request(url, params, max_retries=3):
                     if restart_docker_tor():
                         reinitialize_tor_connection()
                         time.sleep(3)
-                        try:
-                            response = rt.get(url, params=params, timeout=60)
-                            return response
-                        except:
-                            pass
+
+                        def _final_get():
+                            return rt.get(url, params=params, timeout=60)
+
+                        return with_exponential_backoff(
+                            _final_get,
+                            max_retries=3,
+                            base_delay_s=2.0,
+                            retry_on=(Exception,),
+                        )
                 raise
     
     return last_response if last_response else None
