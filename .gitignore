@@ -64,3 +64,7 @@ docs/mrop-rag/mrop_chunks.jsonl
 
 # Bundled tools: never commit real API key lists (see *.example.txt in each secrets/)
 src-tauri/resources/scripts/**/secrets/*.txt
+
+# Local-generated screenshot dumps (not shipped in HEAD / ZIP / Tauri bundle)
+src-tauri/resources/scripts/Phishing_and_Social_Media_All-in-one/examples/screenshots_output/
+src-tauri/resources/scripts/Phishing_and_Social_Media_All-in-one/screenshots/Jack_output/
